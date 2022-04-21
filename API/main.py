@@ -506,7 +506,7 @@ def run_findsource(pj: int = -1):
 prempsearchCを25行目で分割し、それぞれ別のAPIで動作させます。
 連続して実行するとサーバーから情報を取得できないことがあるためです。
 """
-P_C_SPLIT_LINE = 33
+P_C_SPLIT_LINE = 41
 
 
 @app.put("/prempsearchC-before", summary="精密軌道取得 前処理", tags=["command"])
