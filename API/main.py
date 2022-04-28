@@ -505,15 +505,16 @@ def run_findsource(pj: int = -1):
 """
 prempsearchCを25行目で分割し、それぞれ別のAPIで動作させます。
 連続して実行するとサーバーから情報を取得できないことがあるためです。
+K.S. 2022/4/28 prempsearchCスクリプトを明示的に2つに分割
 """
-P_C_SPLIT_LINE = 41
+#P_C_SPLIT_LINE = 41
 
 
 @app.put("/prempsearchC-before", summary="精密軌道取得 前処理", tags=["command"])
 def run_prempsearchC_before(pj: int = -1):
     """
     prempsearchCを編集した場合、動かなくなります。
-    """
+    K.S. 2022/4/28 変更
 
     premp = PROGRAM_PATH / "prempsearchC"
     script = ""
@@ -528,6 +529,10 @@ def run_prempsearchC_before(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     subprocess.run([script], shell=True)
+    """
+
+    os.chdir(pj_path(pj).as_posix())
+    subprocess.run(["prempsearchC-before"], shell=True)
 
     return JSONResponse(status_code=status.HTTP_200_OK)
 
@@ -536,7 +541,7 @@ def run_prempsearchC_before(pj: int = -1):
 def run_prempsearchC_after(pj: int = -1):
     """
     prempsearchCを編集した場合、動かなくなります。
-    """
+    K.S. 2022/4/28 変更
 
     premp = PROGRAM_PATH / "prempsearchC"
     script = "#!/bin/bash\n"
@@ -559,6 +564,10 @@ def run_prempsearchC_after(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     subprocess.run([script], shell=True)
+    """
+
+    os.chdir(pj_path(pj).as_posix())
+    subprocess.run(["prempsearchC-after"], shell=True)
 
     return JSONResponse(status_code=status.HTTP_200_OK)
 
