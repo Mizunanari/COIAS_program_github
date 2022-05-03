@@ -1,29 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*
-
-import os
 import numpy as np
-import re
 
-from astropy.io import fits,ascii
-from astropy.wcs import wcs
-import scipy.spatial as ss
+from astropy.io import fits
 import ephem
 import julian
 import time
-#read catalog
-
-import glob
-#from makedata6 import makedata6
-#from deldaburi2 import deldaburi2
 
 #multiprocessing
 from multiprocessing import Pool
-from multiprocessing import Process
 
-#path_name = os.getcwd()
 #ast list
-#tmp1 = path_name+str("/hoge")
 tmp1 = str("AstMPC_tmp.edb")
 data1 = np.loadtxt(tmp1,delimiter = ',',dtype='str')
 

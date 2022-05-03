@@ -4,14 +4,7 @@
 
 import numpy as np
 from astroquery.jplhorizons import Horizons
-import os
 import time
-from astropy.io import ascii
-from astropy.table import Table,vstack
-import itertools
-from multiprocessing import Pool
-from multiprocessing import Process
-import re
 from astropy.io import fits
 import glob
 

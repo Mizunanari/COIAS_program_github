@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*
-import os
 import sys
-import itertools
 import re
-import subprocess
 
 logFile = open("log.txt","a",newline="\n")
 print("prempedit3.py begins")
@@ -12,8 +9,7 @@ logFile.write("prempedit3.py begins\n")
 
 #cmd = 'cut -b 6-12 mpc2.txt | grep ^H | uniq > hoge.txt'
 #cmd = 'cut -b 6-12 mpc2.txt' 
-#subprocess.call(cmd.split())
-#path_name = os.getcwd()
+
 #detect list
 tmp1 = "Hlist.txt"
 tmp2 = "mpc2.txt"
