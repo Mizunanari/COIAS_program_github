@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*
-import os
-import sys
 import itertools
 import re
-#path_name = os.getcwd()
+
 #detect list
 tmp1 = "mpc.txt"
 tmp2 = "memo.txt"

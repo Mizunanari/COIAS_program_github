@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*
-import os
 import sys
-import itertools
 import re
-import subprocess
+
+logFile = open("log.txt","a",newline="\n")
+print("prempedit3.py begins")
+logFile.write("prempedit3.py begins\n")
 
 #cmd = 'cut -b 6-12 mpc2.txt | grep ^H | uniq > hoge.txt'
 #cmd = 'cut -b 6-12 mpc2.txt' 
-#subprocess.call(cmd.split())
-#path_name = os.getcwd()
+
 #detect list
 tmp1 = "Hlist.txt"
 tmp2 = "mpc2.txt"
@@ -24,6 +24,7 @@ lines2 = data2.readlines()
 args = sys.argv
 if len(args) <= 1:
     print("Please input the first H number.")
+    logFile.write("Please input the first H number.\n")
 else:
 #args= [0,0,0]
 
@@ -76,4 +77,6 @@ else:
     with open(tmp3,'wt') as f:
         f.writelines(new_list4)
 
-
+print("prempedit3.py ends")
+logFile.write("prempedit3.py ends\n")
+logFile.close()
