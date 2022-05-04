@@ -42,8 +42,9 @@ RUN conda config --set auto_activate_base false
 SHELL ["conda", "run", "-n", "coias", "/bin/bash", "-c"]
 
 # Cythonのビルド
-RUN chmod -R 700 ./* && \
-    /root/miniconda3/envs/coias/bin/python setup12.py build_ext --inplace
+RUN chmod -R 700 ./*
+WORKDIR /opt/coias-back-app/src5_astsearch_new
+RUN /root/miniconda3/envs/coias/bin/python setup12.py build_ext --inplace
 
 # C++のビルド
 WORKDIR /opt/coias-back-app/findOrb
@@ -53,6 +54,16 @@ RUN make -f linlunar.mak && \
 # coias-back-appとfindOrbのPATHを通す
 ENV PATH $PATH:/opt/coias-back-app
 ENV PATH $PATH:/opt/coias-back-app/findOrb
+ENV PATH $PATH:/opt/coias-back-app/COIASlibs
+ENV PATH $PATH:/opt/coias-back-app/src1_preprocess
+ENV PATH $PATH:/opt/coias-back-app/src2_startsearch2R
+ENV PATH $PATH:/opt/coias-back-app/src3_prempsearchC-before
+ENV PATH $PATH:/opt/coias-back-app/src4_prempsearchC-after
+ENV PATH $PATH:/opt/coias-back-app/src5_astsearch_new
+ENV PATH $PATH:/opt/coias-back-app/src6_between_COIAS_and_ReCOIAS
+ENV PATH $PATH:/opt/coias-back-app/src7_AstsearchR_afterReCOIAS
+ENV PATH $PATH:/opt/coias-back-app/src8_astsearch_manual
+ENV PYTHONPATH $PYTHONPATH:/opt/coias-back-app/COIASlibs
 
 # API server を開始
 WORKDIR /opt/coias-back-app

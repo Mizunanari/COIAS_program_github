@@ -46,3 +46,13 @@ ENV PATH $PATH:/root/miniconda3/bin
 # coias-back-appとfindOrbのPATHを通す
 ENV PATH $PATH:/opt/coias-back-app
 ENV PATH $PATH:/opt/coias-back-app/findOrb
+ENV PATH $PATH:/opt/coias-back-app/COIASlibs
+ENV PATH $PATH:/opt/coias-back-app/src1_preprocess
+ENV PATH $PATH:/opt/coias-back-app/src2_startsearch2R
+ENV PATH $PATH:/opt/coias-back-app/src3_prempsearchC-before
+ENV PATH $PATH:/opt/coias-back-app/src4_prempsearchC-after
+ENV PATH $PATH:/opt/coias-back-app/src5_astsearch_new
+ENV PATH $PATH:/opt/coias-back-app/src6_between_COIAS_and_ReCOIAS
+ENV PATH $PATH:/opt/coias-back-app/src7_AstsearchR_afterReCOIAS
+ENV PATH $PATH:/opt/coias-back-app/src8_astsearch_manual
+ENV PYTHONPATH $PYTHONPATH:/opt/coias-back-app/COIASlibs

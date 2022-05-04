@@ -19,6 +19,7 @@ conda info -e
 chmod -R 700 /opt/coias-back-app
 
 # Cythonのビルド
+cd /opt/coias-back-app/src5_astsearch_new
 python setup12.py build_ext --inplace
 
 # C++のビルド
