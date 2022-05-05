@@ -7,7 +7,6 @@ Created on Thu Mar 26 00:38:58 2020
 """
 
 import glob
-
 import astropy.stats
 import matplotlib.pyplot as plt
 import numpy as np

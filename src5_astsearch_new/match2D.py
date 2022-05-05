@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*
 import os
-
 import numpy as np
 
 path_name = os.getcwd()
