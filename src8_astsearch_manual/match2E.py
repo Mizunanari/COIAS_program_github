@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*
 import os
-
 import numpy as np
 
 path_name = os.getcwd()
@@ -34,9 +33,9 @@ else:
     for i in range(len(data1)):
         l = 0
         for j in range(len(data2)):
-            if data1[i, 1] - 0.000001 < data2[j, 0] and data1[i, 1] + 0.000001 > data2[j, 0] and data1[i, 2] - 0.0005 < \
-                    data2[j, 1] and data1[i, 2] + 0.0005 > data2[j, 1] and data1[i, 3] - 0.0005 < data2[j, 2] and data1[
-                i, 3] + 0.0005 > data2[j, 2]:
+            if data1[i, 1] - 0.000001 < data2[j, 0] and data1[i, 1] + 0.000001 > data2[j, 0] and \
+               data1[i, 2] - 0.0005 < data2[j, 1] and data1[i, 2] + 0.0005 > data2[j, 1] and \
+               data1[i, 3] - 0.0005 < data2[j, 2] and data1[i, 3] + 0.0005 > data2[j, 2]:
                 tmp3 = np.append(tmp3, data2b[j, 0:1])
                 tmp3 = np.append(tmp3, data1b[i, 1:9])
                 tmp3 = np.append(tmp3, data2b[j, 1:2])
@@ -44,11 +43,11 @@ else:
         if l == 0:
             for n in range(len(time_list)):
                 if time_list[n] - 0.00001 < float(data1b[i, 1]) and time_list[n] + 0.00001 > float(data1b[i, 1]):
-                    #                print(n,file_list[n])
+                    # print(n,file_list[n])
                     tmp5 = np.append(tmp5, data1b[i])
                     tmp5 = np.append(tmp5, file_list[n])
 
-    #            print(data1[i],data2b[j,0])
+    # print(data1[i],data2b[j,0])
     # Revised 2020.2.13
     if len(tmp3) == 0:
         np.savetxt('match_manual.txt', tmp3, fmt='%s')

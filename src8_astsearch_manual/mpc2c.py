@@ -36,8 +36,8 @@ else:
             name1 = int(name[i])
             ################ over 100000 ####################
             if name1 >= 100000:
-                #        print(re.findall(r'^..',str(name1[i])))
-                #        tmp1 = re.findall(r'^..',str(name[i][i]))
+                # print(re.findall(r'^..',str(name1[i])))
+                # tmp1 = re.findall(r'^..',str(name[i][i]))
                 name[i] = re.sub(r'^10', 'A', str(name[i]))
                 name[i] = re.sub(r'^11', 'B', str(name[i]))
                 name[i] = re.sub(r'^12', 'C', str(name[i]))
@@ -90,7 +90,7 @@ else:
                 name[i] = re.sub(r'^59', 'x', str(name[i]))
                 name[i] = re.sub(r'^60', 'y', str(name[i]))
                 name[i] = re.sub(r'^61', 'z', str(name[i]))
-                #           print(name[i])
+                # print(name[i])
 
                 t = Time(data[i, 0], format='jd')
                 t1 = t.iso
@@ -101,7 +101,7 @@ else:
                 # group(1) wo saiyo
                 m2 = m.group(1)
                 t2 = m2.replace('-', ' ')
-                #        print(name[i][i],t2)
+                # print(name[i][i],t2)
                 # decimal nukidasi
                 tt = int(data[i, 0])
                 ttt = data[i, 0] - tt - 0.5
@@ -129,7 +129,7 @@ else:
                 # decimal=2
                 ras2 = "{:.2f}".format(ras)
                 ras3 = ras2.rjust(5, '0')
-                #            ras3 = ras2.rjust(4,'0')
+                # ras3 = ras2.rjust(4,'0')
                 decd = c.dec.dms[0]
                 decm = int(c.dec.dms[1])
                 decs = np.round(c.dec.dms[2], decimals=2)
@@ -149,22 +149,22 @@ else:
                     decm = -1 * decm
                     decs = -1 * decs
 
-                #                if tmp > 0:
-                #                    tmp3 = str(tmp)
-                #                    decd2 = '+' + tmp3
-                #                else:
-                #                    decd2 = "{:03d}".format(tmp)
-                #                    decm = -1*decm
-                #                    decs = -1*decs
+                # if tmp > 0:
+                #     tmp3 = str(tmp)
+                #     decd2 = '+' + tmp3
+                # else:
+                #     decd2 = "{:03d}".format(tmp)
+                #     decm = -1*decm
+                #     decs = -1*decs
                 decd3 = ras3 + ' ' + decd2
                 decm2 = "{:02d}".format(decm)
                 decs2 = "{:.2f}".format(decs)
                 decs3 = decs2.rjust(5, '0')
                 filobs = fil[i, 0] + '      568'
 
-                #            decm = int(c.dec.dms[1])
-                #            decs = np.round(c.ra.dms[2],decimals=2)
-                #            decs2 =  "{:.2f}".format(decs)
+                #     decm = int(c.dec.dms[1])
+                #     decs = np.round(c.ra.dms[2],decimals=2)
+                #     decs2 =  "{:.2f}".format(decs)
 
                 # mag xy pixel
                 mag2 = '        ' + "{:.1f}".format(data[i, 3])
@@ -188,7 +188,7 @@ else:
                 # group(1) wo saiyo
                 m2 = m.group(1)
                 t2 = m2.replace('-', ' ')
-                #        print(name[i][i],t2)
+                # print(name[i][i],t2)
                 # decimal nukidasi
                 tt = int(data[i, 0])
                 ttt = data[i, 0] - tt - 0.5
@@ -235,22 +235,22 @@ else:
                     decm = -1 * decm
                     decs = -1 * decs
 
-                #               if tmp > 0:
-                #                   tmp3 = str(tmp)
-                #                   decd2 = '+' + tmp3
-                #               else:
-                #                   decd2 = "{:03d}".format(tmp)
-                #                   decm = -1*decm
-                #                   decs = -1*decs
+                # if tmp > 0:
+                #     tmp3 = str(tmp)
+                #     decd2 = '+' + tmp3
+                # else:
+                #     decd2 = "{:03d}".format(tmp)
+                #     decm = -1*decm
+                #     decs = -1*decs
                 decd3 = ras3 + ' ' + decd2
                 decm2 = "{:02d}".format(decm)
                 decs2 = "{:.2f}".format(decs)
                 decs3 = decs2.rjust(5, '0')
                 filobs = fil[i, 0] + '      568'
 
-                #            decm = int(c.dec.dms[1])
-                #            decs = np.round(c.ra.dms[2],decimals=2)
-                #            decs2 =  "{:.2f}".format(decs)
+                #     decm = int(c.dec.dms[1])
+                #     decs = np.round(c.ra.dms[2],decimals=2)
+                #     decs2 =  "{:.2f}".format(decs)
 
                 # mag xy pixel
                 mag2 = '        ' + "{:.1f}".format(data[i, 3])
@@ -274,7 +274,7 @@ else:
                 # group(1) wo saiyo
                 m2 = m.group(1)
                 t2 = m2.replace('-', ' ')
-                #        print(name[i][i],t2)
+                # print(name[i][i],t2)
                 # decimal nukidasi
                 tt = int(data[i, 0])
                 ttt = data[i, 0] - tt - 0.5
@@ -321,22 +321,22 @@ else:
                     decm = -1 * decm
                     decs = -1 * decs
 
-                #                if tmp > 0:
-                #                    tmp3 = str(tmp)
-                #                    decd2 = '+' + tmp3
-                #                else:
-                #                    decd2 = "{:03d}".format(tmp)
-                #                    decm = -1*decm
-                #                    decs = -1*decs
+                # if tmp > 0:
+                #     tmp3 = str(tmp)
+                #     decd2 = '+' + tmp3
+                # else:
+                #     decd2 = "{:03d}".format(tmp)
+                #     decm = -1*decm
+                #     decs = -1*decs
                 decd3 = ras3 + ' ' + decd2
                 decm2 = "{:02d}".format(decm)
                 decs2 = "{:.2f}".format(decs)
                 decs3 = decs2.rjust(5, '0')
                 filobs = fil[i, 0] + '      568'
 
-                #            decm = int(c.dec.dms[1])
-                #            decs = np.round(c.ra.dms[2],decimals=2)
-                #            decs2 =  "{:.2f}".format(decs)
+                #     decm = int(c.dec.dms[1])
+                #     decs = np.round(c.ra.dms[2],decimals=2)
+                #     decs2 =  "{:.2f}".format(decs)
 
                 # mag xy pixel
                 mag2 = '        ' + "{:.1f}".format(data[i, 3])
@@ -358,7 +358,7 @@ else:
                 # group(1) wo saiyo
                 m2 = m.group(1)
                 t2 = m2.replace('-', ' ')
-                #        print(name[i][i],t2)
+                # print(name[i][i],t2)
                 # decimal nukidasi
                 tt = int(data[i, 0])
                 ttt = data[i, 0] - tt - 0.5
@@ -405,22 +405,22 @@ else:
                     decm = -1 * decm
                     decs = -1 * decs
 
-                #                if tmp > 0:
-                #                    tmp3 = str(tmp)
-                #                    decd2 = '+' + tmp3
-                #                else:
-                #                    decd2 = "{:03d}".format(tmp)
-                #                    decm = -1*decm
-                #                    decs = -1*decs
+                # if tmp > 0:
+                #     tmp3 = str(tmp)
+                #     decd2 = '+' + tmp3
+                # else:
+                #     decd2 = "{:03d}".format(tmp)
+                #     decm = -1*decm
+                #     decs = -1*decs
                 decd3 = ras3 + decd2
                 decm2 = "{:02d}".format(decm)
                 decs2 = "{:.2f}".format(decs)
                 decs3 = decs2.rjust(5, '0')
                 filobs = fil[i, 0] + '      568'
 
-                #            decm = int(c.dec.dms[1])
-                #            decs = np.round(c.ra.dms[2],decimals=2)
-                #            decs2 =  "{:.2f}".format(decs)
+                #     decm = int(c.dec.dms[1])
+                #     decs = np.round(c.ra.dms[2],decimals=2)
+                #     decs2 =  "{:.2f}".format(decs)
 
                 # mag xy pixel
                 mag2 = '        ' + "{:.1f}".format(data[i, 3])

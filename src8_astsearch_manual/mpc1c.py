@@ -83,14 +83,14 @@ else:
             tmp2 = "{:03d}".format(tmp[i])
             decd2.append(tmp2)
 
-    #    for i in range(len(tmp)):
-    #        if tmp[i] > 0:
-    #            tmp3 = str(tmp[i])
-    #            tmp2 = '+'+tmp3
-    #            decd2.append(tmp2)
-    #        else:
-    #            tmp2 = "{:03d}".format(tmp[i])
-    #            decd2.append(tmp2)
+    # for i in range(len(tmp)):
+    #     if tmp[i] > 0:
+    #         tmp3 = str(tmp[i])
+    #         tmp2 = '+'+tmp3
+    #         decd2.append(tmp2)
+    #     else:
+    #         tmp2 = "{:03d}".format(tmp[i])
+    #         decd2.append(tmp2)
     decd3 = []
     for i in range(len(ras3)):
         tmp5 = ras3[i] + ' ' + decd2[i]
@@ -106,9 +106,7 @@ else:
     data[:, 4][np.isnan(data[:, 4])] = 35.0
     mag2 = ['        ' + "{:.1f}".format(x) for x in data[:, 4]]
     temp = np.r_[name1, t8, rah2, ram2, decd3, decm2, decs3, mag2, filobs]
-    temp2 = np.r_[
-        name1, t8, rah2, ram2, decd3, decm2, decs3, mag2, filobs, fil[:, 1], data[:, 4], data[:, 5], data[:, 6], data[:,
-                                                                                                                 7]]
+    temp2 = np.r_[name1, t8, rah2, ram2, decd3, decm2, decs3, mag2, filobs, fil[:, 1], data[:, 4], data[:, 5], data[:, 6], data[:,7]]
     temp3 = np.r_[name1, fil[:, 1], data[:, 6], data[:, 7]]
     # temp = np.r_[name1,t8,rah2,ram2,decd3,decm2,decs3,mag2,fil[:,0],fil[:,1],data[:,4],data[:,5],data[:,6],data[:,7]]
     temp = temp.reshape(9, int(len(temp) / 9))
@@ -211,7 +209,7 @@ else:
                 name3 = re.sub(r'^60', 'y', str(name3))
                 name3 = re.sub(r'^61', 'z', str(name3))
                 name2 = 'K' + name1[2] + name1[3] + name1[4] + name3 + name1[8] + name1[5]
-            #        print(name2)
+            # print(name2)
             t = Time(data[i, 0], format='jd')
             t1 = t.iso
             # space kugiri
@@ -221,7 +219,7 @@ else:
             # group(1) wo saiyo
             m2 = m.group(1)
             t2 = m2.replace('-', ' ')
-            #        print(name[i],t2)
+            # print(name[i],t2)
             # decimal nukidasi
             tt = int(data[i, 0])
             ttt = data[i, 0] - tt - 0.5
@@ -246,9 +244,9 @@ else:
             ram2 = "{:02d}".format(ram)
             ras = np.round(c.ra.hms[2], decimals=3)
             # decimal=2
-            #        ras2 = "{:.3f}".format(ras)
+            # ras2 = "{:.3f}".format(ras)
             ras2 = "{:.2f}".format(ras)
-            #        ras3 = ras2.rjust(6,'0')
+            # ras3 = ras2.rjust(6,'0')
             ras3 = ras2.rjust(5, '0')
             decd = c.dec.dms[0]
             decm = int(c.dec.dms[1])
@@ -269,14 +267,14 @@ else:
                 decm = -1 * decm
                 decs = -1 * decs
 
-            #            if tmp > 0:
-            #                tmp3 = str(tmp)
-            #                decd2 = '+' + tmp3
-            #            else:
-            #                decd2 = "{:03d}".format(tmp)
-            #                decm = -1*decm
-            #                decs = -1*decs
-            #        decd3 = ras3+decd2
+            # if tmp > 0:
+            #     tmp3 = str(tmp)
+            #     decd2 = '+' + tmp3
+            # else:
+            #     decd2 = "{:03d}".format(tmp)
+            #     decm = -1*decm
+            #     decs = -1*decs
+            # decd3 = ras3+decd2
             decd3 = ras3 + ' ' + decd2
             decm2 = "{:02d}".format(decm)
             decs2 = "{:.2f}".format(decs)
