@@ -14,8 +14,8 @@ lines = data1.readlines()
 # list of moving object
 new_list1 = []
 for i in range(len(lines) - 1):
-    #    if lines[i][0:12] != lines[i+1][0:12] and lines[i+1][5] == 'H':
-    #        print(lines[i])
+    # if lines[i][0:12] != lines[i+1][0:12] and lines[i+1][5] == 'H':
+    # print(lines[i])
     # ---K. S. modify 2021/6/17--------------------------------------------------------------------------------------
     if i == 0:
         if lines[i][5:6] == 'H':
@@ -27,16 +27,16 @@ for i in range(len(lines) - 1):
             new_list1.append(lines[i])
 
     if (lines[i][0:12] != lines[i + 1][0:12] and lines[i + 1][5:6] == 'H'):
-        #    if lines[i][0:12] != lines[i+1][0:12] and lines[i+1][5:9] == 'H002':
+        # if lines[i][0:12] != lines[i+1][0:12] and lines[i+1][5:9] == 'H002':
 
-        #        lines[i+1][13].replace(' ','*')
+        # lines[i+1][13].replace(' ','*')
         mylist = [word for word in lines[i + 1]]
         mylist[12] = '*'
         newlist = "".join(mylist)
         new_list1.append(newlist)
     else:
         new_list1.append(lines[i + 1])
-#        print(lines[i])
+        # print(lines[i])
 # ---------------------------------------------------------------------------------------------------------------
 with open(tmp2, 'wt') as f:
     f.writelines(new_list1)

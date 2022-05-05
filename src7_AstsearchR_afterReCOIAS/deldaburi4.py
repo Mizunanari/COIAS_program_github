@@ -27,19 +27,20 @@ dec2 = dec.reshape(len(dec), 1)
 data2 = np.hstack((data, ra2, dec2))
 list1 = []
 for i in range(len(data2)):
-    #    np.where((data2[:,0]== data2[i,0]))
+    # np.where((data2[:,0]== data2[i,0]))
+    
     # condition
     time = data2[i, 0]
     lra = data2[i, 7] - 0.0005
     hra = data2[i, 7] + 0.0005
     ldec = data2[i, 8] - 0.0005
     hdec = data2[i, 8] + 0.0005
-    #    print(np.where((data2[:,0] == time) & (data2[:,7] > lra) & (data2[:,7] < hra)& (data2[:,8] > ldec) & (data2[:,8] < hdec))
-    tmp = np.where(
-        (data2[:, 0] == time) & (data2[:, 7] > lra) & (data2[:, 7] < hra) & (data2[:, 8] > ldec) & (data2[:, 8] < hdec))
+    # print(np.where((data2[:,0] == time) & (data2[:,7] > lra) & (data2[:,7] < hra)& (data2[:,8] > ldec) & (data2[:,8] < hdec))
+    tmp = np.where((data2[:, 0] == time) & (data2[:, 7] > lra) & (data2[:, 7] < hra) & (data2[:, 8] > ldec) & (data2[:, 8] < hdec))
     if len(tmp[0]) >= 2:
         tmp2 = tmp[0].tolist()
         list1.append(tmp2)
+        
 # convert to tuple and then convert to list due to delete duplicate
 arr = list(map(list, set(map(tuple, list1))))
 arr.sort()
@@ -67,7 +68,7 @@ df5 = df4[df4WithCount["count"] >= 3]
 # df4.groupby('name').count()['year'] >=3
 # def keepindex(d):
 #    return pd.DataFrame({
-#        df4.groupby('name').count()['year'] >=3 
+#    df4.groupby('name').count()['year'] >=3 
 
 
 list3 = df5.values.tolist()
@@ -75,20 +76,17 @@ list3 = df5.values.tolist()
 list4 = []
 for i in range(len(list3)):
     # K. S. modify 2021/6/17
-    if (re.search(r'^H......', list3[i][0]) or re.search(r'^K......', list3[i][0]) or re.search(r'^J......',
-                                                                                                list3[i][0])):
+    if (re.search(r'^H......', list3[i][0]) or re.search(r'^K......', list3[i][0]) or re.search(r'^J......', list3[i][0])):
         part1 = '     ' + list3[i][0] + '  ' + list3[i][1] + ' ' + str(list3[i][2]).zfill(2)
-        part2 = "{:.5f}".format(list3[i][3]).zfill(8) + ' ' + str(list3[i][4]).zfill(2) + ' ' + str(list3[i][5]).zfill(
-            2)
+        part2 = "{:.5f}".format(list3[i][3]).zfill(8) + ' ' + str(list3[i][4]).zfill(2) + ' ' + str(list3[i][5]).zfill(2)
         part3 = "{:.2f}".format(list3[i][6]).zfill(5) + ' ' + str(list3[i][7]) + ' ' + str(list3[i][8]).zfill(2)
         part4 = "{:.2f}".format(list3[i][9]).zfill(5) + '         ' + "{:.1f}".format(list3[i][10])
         part5 = str(list3[i][11]) + '      ' + str(list3[i][12])
-        #        print(part1+ ' ' + part2 + ' ' + part3 + ' ' + part4 + ' ' + part5)
+        # print(part1+ ' ' + part2 + ' ' + part3 + ' ' + part4 + ' ' + part5)
         list4.append(part1 + ' ' + part2 + ' ' + part3 + ' ' + part4 + ' ' + part5)
     else:
         part1 = str(list3[i][0]).zfill(5) + '         ' + list3[i][1] + ' ' + str(list3[i][2]).zfill(2)
-        part2 = "{:.5f}".format(list3[i][3]).zfill(8) + ' ' + str(list3[i][4]).zfill(2) + ' ' + str(list3[i][5]).zfill(
-            2)
+        part2 = "{:.5f}".format(list3[i][3]).zfill(8) + ' ' + str(list3[i][4]).zfill(2) + ' ' + str(list3[i][5]).zfill(2)
         part3 = "{:.2f}".format(list3[i][6]).zfill(5) + ' ' + str(list3[i][7]) + ' ' + str(list3[i][8]).zfill(2)
         part4 = "{:.2f}".format(list3[i][9]).zfill(5) + '         ' + "{:.1f}".format(list3[i][10])
         part5 = str(list3[i][11]) + '      ' + str(list3[i][12])

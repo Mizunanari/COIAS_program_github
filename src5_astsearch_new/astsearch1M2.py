@@ -57,7 +57,7 @@ zm4 = scidata4[0].header['Z_P']
 zm5 = scidata5[0].header['Z_P']
 zm = [zm1, zm2, zm3, zm4, zm5]
 
-#nbin(K.S. added 2022/5/2)
+# nbin(K.S. added 2022/5/2)
 nbin1 = scidata1[0].header['NBIN']
 nbin2 = scidata2[0].header['NBIN']
 nbin3 = scidata3[0].header['NBIN']
@@ -187,10 +187,10 @@ for l in range(num4):
         tmp5 = np.append(tmp5, tmp4)
     # tmp4b is not detected signal in frame #4
     elif len(res) == 0:
-        #        print(trac2[l])
+        # print(trac2[l])
         tmp4b = np.append(tmp4b, trac2[l], axis=0)
-#       tmp5b = np.append(tmp5b,tmp4b)
-##        tmp4b = np.append(trac2[l],axis =0)
+        # tmp5b = np.append(tmp5b,tmp4b)
+        # tmp4b = np.append(trac2[l],axis =0)
 # 1,2,3,4 detect        
 a = int(len(tmp5) / 12)
 trac3 = tmp5.reshape(a, 4, 3)
@@ -274,7 +274,7 @@ for k in range(num3):
     d, ref = tree4.query(pradec4, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac2b[k], [radec4b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -307,7 +307,7 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac6[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -342,7 +342,7 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac6b[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
 # 1,2,5 detect 3 ,4undetect
@@ -373,12 +373,12 @@ for k in range(num3):
     d, ref = tree2.query(pradec2, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac1b[k], [radec2b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac1b[k], axis=0)
-    # 1,3,2 detect
+# 1,3,2 detect
 a = int(len(tmp5) / 9)
 trac9 = tmp5.reshape(a, 3, 3)
 # 1,3 detect 2 undetect
@@ -395,8 +395,8 @@ tmp4c = np.empty((2, 3), float)
 num3 = len(trac9b)
 for k in range(num3):
     # predict #4 position
-    #    ra4  = trac9b[k,1,1] + (trac9b[k,1,1] - trac9b[k,0,1])*dT8/dT1
-    #    dec4 = trac9b[k,1,2] + (trac9b[k,1,2] - trac9b[k,0,2])*dT8/dT1
+    # ra4  = trac9b[k,1,1] + (trac9b[k,1,1] - trac9b[k,0,1])*dT8/dT1
+    # dec4 = trac9b[k,1,2] + (trac9b[k,1,2] - trac9b[k,0,2])*dT8/dT1
     # revised 2020.5.5
     ra4 = trac9b[k, 1, 1] + (trac9b[k, 1, 1] - trac9b[k, 0, 1]) * dT4 / dT3
     dec4 = trac9b[k, 1, 2] + (trac9b[k, 1, 2] - trac9b[k, 0, 2]) * dT4 / dT3
@@ -407,7 +407,7 @@ for k in range(num3):
     d, ref = tree4.query(pradec4, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac9b[k], [radec4b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -473,7 +473,7 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac10b[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -508,7 +508,7 @@ for k in range(num3):
     d, ref = tree1.query(pradec1, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac1c[k], [radec1b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -543,7 +543,7 @@ for k in range(num3):
     d, ref = tree4.query(pradec4, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac13b[k], [radec4b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -578,7 +578,7 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac14[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -611,7 +611,7 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac14b[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -645,7 +645,7 @@ for k in range(num3):
     d, ref = tree3.query(pradec3, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac1d[k], [radec3b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -678,7 +678,7 @@ for k in range(num3):
     d, ref = tree2.query(pradec2, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac17b[k], [radec2b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -713,7 +713,7 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac18b[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -748,7 +748,7 @@ for k in range(num3):
     d, ref = tree3.query(pradec3, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac1e[k], [radec3b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -782,7 +782,7 @@ for k in range(num3):
     d, ref = tree1.query(pradec1, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac20b[k], [radec1b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -816,7 +816,7 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac21b[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -852,12 +852,12 @@ for k in range(num3):
     d, ref = tree2.query(pradec2, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac1f[k], [radec2b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac1f[k], axis=0)
-    # 3,4,2 detect
+# 3,4,2 detect
 a = int(len(tmp5) / 9)
 if a == 0:
     trac23 = []
@@ -885,12 +885,12 @@ for k in range(num3):
     d, ref = tree1.query(pradec1, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac23b[k], [radec1b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac23b[k], axis=0)
-    # 3,4,1 detect 2 undetect
+# 3,4,1 detect 2 undetect
 a = int(len(tmp5) / 9)
 if a == 0:
     trac24 = []
@@ -920,12 +920,12 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac25b[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac25b[k], axis=0)
-    # 3,4,5 detect 1,2 undetect
+# 3,4,5 detect 1,2 undetect
 a = int(len(tmp5) / 9)
 if a == 0:
     trac26 = []
@@ -977,14 +977,14 @@ else:
 
             # param of aperture
             f = 1  # factor 6: semimajor-axis no 3 bai
-            #        w = width * f
+            # w = width * f
             w = 6
             wa = w * u.pix
             w_in = (w + 2) * u.pix
             w_out = (w + 8) * u.pix
 
             # scidata is y,x array
-            #            position = (ypix2,xpix2)
+            # position = (ypix2,xpix2)
             position = (xypix[0], xypix[1])
             # aperture phot
             ap = CircularAperture(position, wa.value)
@@ -1001,11 +1001,11 @@ else:
                 final_sum = 1
             mag = np.round(zm[j] - 2.5 * np.log10(final_sum), decimals=3)
             # error
-            sigma_ron =  4.5*nbin[j]*nbin[j] #read out noise of HSC /nobining :4.5e S.U modified 2022/5/4
+            sigma_ron =  4.5*nbin[j]*nbin[j] # read out noise of HSC /nobining :4.5e S.U modified 2022/5/4
             gain = 3.0 / nbin[j] # gain of HSC/nobining :3.0  S.U modified 2022/5/4
             S_star = gain * final_sum
             effective_area = ap.area * ((1 + ap.area) / sap.area)
-            #            N2 = S_star + effective_area * (gain * bkg_mean + sigma_ron)
+            # N2 = S_star + effective_area * (gain * bkg_mean + sigma_ron)
             N2 = S_star
             N = np.sqrt(N2)  # Noise in electron
             SNR = S_star / N
@@ -1025,29 +1025,29 @@ else:
 
             # clip the asteroid region #revised 2019.11.8
             if jd1 == trac27[l, m, 0]:
-                #                tmp = scidata[0][tmpy:tmpy2,tmpx:tmpx2]
+                # tmp = scidata[0][tmpy:tmpy2,tmpx:tmpx2]
                 tmp = scidata[0]
             if jd2 == trac27[l, m, 0]:
-                #                tmp = scidata[1][tmpy:tmpy2,tmpx:tmpx2]
+                # tmp = scidata[1][tmpy:tmpy2,tmpx:tmpx2]
                 tmp = scidata[1]
             if jd3 == trac27[l, m, 0]:
-                #                tmp = scidata[2][tmpy:tmpy2,tmpx:tmpx2]
+                # tmp = scidata[2][tmpy:tmpy2,tmpx:tmpx2]
                 tmp = scidata[2]
             if jd4 == trac27[l, m, 0]:
-                #                tmp = scidata[3][tmpy:tmpy2,tmpx:tmpx2]
+                # tmp = scidata[3][tmpy:tmpy2,tmpx:tmpx2]
                 tmp = scidata[3]
             if jd5 == trac27[l, m, 0]:
-                #                tmp = scidata[4][tmpy:tmpy2,tmpx:tmpx2]
+                # tmp = scidata[4][tmpy:tmpy2,tmpx:tmpx2]
                 tmp = scidata[4]
-            #            mean,median,std = sigma_clipped_stats(tmp,sigma=3.0,maxiters=5)
-            #            tmp-=median
+            # mean,median,std = sigma_clipped_stats(tmp,sigma=3.0,maxiters=5)
+            # tmp-=median
 
-            #            cat = data_properties(tmp)
-            #            columns =['xcentroid','ycentroid','semimajor_axis_sigma','semiminor_axis_sigma','orientation','elongation']
+            # cat = data_properties(tmp)
+            # columns =['xcentroid','ycentroid','semimajor_axis_sigma','semiminor_axis_sigma','orientation','elongation']
 
             # param of aperture
             f = 1  # factor 6: semimajor-axis no 3 bai
-            #        w = width * f
+            # w = width * f
             w = 6
             wa = w * u.pix
             w_in = (w + 2) * u.pix
@@ -1055,34 +1055,36 @@ else:
 
             # scidata is y,x array
             position = (xypix[0], xypix[1])
-            #            position = (ypix2,xpix2)
+            # position = (ypix2,xpix2)
+            
             # revised 2020.2.20
-            #            position = (xypix[1],xypix[0])
+            # position = (xypix[1],xypix[0])
             # aperture phot
             ap = CircularAperture(position, wa.value)
             sap = CircularAnnulus(position, w_in.value, w_out.value)
 
             rawflux_table = aperture_photometry(tmp, ap, method='subpixel', subpixels=5)
             bkgflux_table = aperture_photometry(tmp, sap, method='subpixel', subpixels=5)
-            #            print(bkgflux_table['aperture_sum'],sap.area())
+            # print(bkgflux_table['aperture_sum'],sap.area())
+            
             # 2020.11.25 revised
             bkg_mean = bkgflux_table['aperture_sum'] / sap.area
-            #            bkg_mean = 10
+            # bkg_mean = 10
             bkg_sum = bkg_mean * ap.area
-            final_sum = nbin[m]*nbin[m]*(rawflux_table['aperture_sum'] - bkg_sum) #K.S. modified 2022/5/3
-            #final_sum = 4.0 * (rawflux_table['aperture_sum'] - bkg_sum)
-            #           final_sum = 4.0*(rawflux_table['aperture_sum'])
+            final_sum = nbin[m]*nbin[m]*(rawflux_table['aperture_sum'] - bkg_sum) # K.S. modified 2022/5/3
+            # final_sum = 4.0 * (rawflux_table['aperture_sum'] - bkg_sum)
+            # final_sum = 4.0*(rawflux_table['aperture_sum'])
             # bug edit 2019.11.7
             if final_sum <= 0:
                 final_sum = 1
             # mag = np.round(zm[j] - 2.5*np.log10(final_sum),decimals=3)
             mag = np.round(zm[m] - 2.5 * np.log10(final_sum), decimals=3)  # 2021/5/24 K.S. modify
             # error
-            sigma_ron =  4.5*nbin[m]*nbin[m]  #read out noise of HSC /nobining :4.5e  S.U modified 2022/5/4
-            gain = 3.0 / nbin[m] #gain of HSC/nobining :3.0  S.U modified 2022/5/4
+            sigma_ron =  4.5*nbin[m]*nbin[m] # read out noise of HSC /nobining :4.5e  S.U modified 2022/5/4
+            gain = 3.0 / nbin[m] # gain of HSC/nobining :3.0  S.U modified 2022/5/4
             S_star = gain * final_sum
             effective_area = ap.area * ((1 + ap.area) / sap.area)
-            #            N2 = S_star + effective_area * (gain * bkg_mean + sigma_ron)
+            # N2 = S_star + effective_area * (gain * bkg_mean + sigma_ron)
             N2 = S_star
             N = np.sqrt(N2)  # Noise in electron
             SNR = S_star / N

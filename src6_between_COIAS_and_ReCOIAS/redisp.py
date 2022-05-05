@@ -16,17 +16,17 @@ lines2 = data2.readlines()
 
 list = []
 for i in range(len(lines)):
-    #    tmp = lines[i].strip()
+    # tmp = lines[i].strip()
     tmp1 = lines[i]
-    #    print(tmp[15:80])
+    # print(tmp[15:80])
     tmp1b = tmp1[15:80]
     for j in range(len(lines2)):
         tmp2 = lines2[j]
-        #        print(tmp2[15:80])
+        # print(tmp2[15:80])
         tmp2b = tmp2[15:80]
         if tmp1b == tmp2b:
             tmp3 = tmp2[0:15] + tmp1[15:124]
-            #            print(tmp3,i,j)
+            # print(tmp3,i,j)
             list.append(tmp3)
 # delete daburi
 list2 = sorted(list, reverse=True)
