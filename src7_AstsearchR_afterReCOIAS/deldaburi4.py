@@ -6,12 +6,11 @@ import re
 import numpy as np
 import pandas as pd
 
-# path_name = os.getcwd()
 # detect list
 tmp1 = "hoge2.txt"
 df = pd.read_csv(tmp1, header=None, sep="\s+",
-                 names=["name", "year", "month", "day", "rah", "ram", "ras", "decd", "decm", "decs", "mag", "fil",
-                        "code"], dtype={'decd': 'object'})
+                 names=["name", "year", "month", "day", "rah", "ram", "ras", "decd", "decm", "decs", "mag", "fil","code"],
+                 dtype={'decd': 'object'})
 
 # print(df[df.duplicated(subset=["year","month","day","rah","ram","ras","decd","decm","decs","mag","fil","code"])])
 

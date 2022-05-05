@@ -157,7 +157,7 @@ for k in range(num3):
     d, ref = tree3.query(pradec3, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac1[k], [radec3b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -182,7 +182,7 @@ for l in range(num4):
     d, ref = tree4.query(pradec4, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac2[l],radec4[ref])
+        # print(trac2[l],radec4[ref])
         tmp4 = np.append(trac2[l], [radec4b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     # tmp4b is not detected signal in frame #4
@@ -213,7 +213,7 @@ for l in range(num5):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac3[l],radec5[ref])
+        # print(trac3[l],radec5[ref])
         tmp4 = np.append(trac3[l], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -243,7 +243,7 @@ for l in range(num5):
     d, ref = tree5.query(pradec5b, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #  print(trac3b[l],radec5b[ref])
+        # print(trac3b[l],radec5b[ref])
         tmp4 = np.append(trac3b[l], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -319,8 +319,8 @@ if len(tmp5) == 0:
 else:
     a = int(len(tmp5) / 12)
     trac7 = tmp5.reshape(a, 4, 3)
-# a = int(len(tmp5)/12)
-# trac7 = tmp5.reshape(a,4,3)
+    # a = int(len(tmp5)/12)
+    # trac7 = tmp5.reshape(a,4,3)
 
 # 1,2 4 detect 3,5 undetect
 b = int(len(tmp4c) / 3)
@@ -440,7 +440,7 @@ for k in range(num3):
     d, ref = tree5.query(pradec5, distance_upper_bound=0.004)
     # reject number of res > 1 because it has a high possibility to be noise
     if len(res) == 1 and d < 0.001:
-        #        print(trac1[k],radec3[ref])
+        # print(trac1[k],radec3[ref])
         tmp4 = np.append(trac10[k], [radec5b[ref]], axis=0)
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
@@ -513,7 +513,7 @@ for k in range(num3):
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac1c[k], axis=0)
-    # 2,3,1 detect
+# 2,3,1 detect
 a = int(len(tmp5) / 9)
 if a == 0:
     trac13 = []
@@ -650,7 +650,7 @@ for k in range(num3):
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac1d[k], axis=0)
-    # 1,4,3 detect
+# 1,4,3 detect
 a = int(len(tmp5) / 9)
 if a == 0:
     trac17 = []
@@ -718,7 +718,7 @@ for k in range(num3):
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac18b[k], axis=0)
-    # 1,4,5 detect 2,3 undetect
+# 1,4,5 detect 2,3 undetect
 a = int(len(tmp5) / 9)
 if a == 0:
     trac19 = []
@@ -753,7 +753,7 @@ for k in range(num3):
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac1e[k], axis=0)
-    # 2,4,3 detect
+# 2,4,3 detect
 a = int(len(tmp5) / 9)
 if a == 0:
     trac20 = []
@@ -787,7 +787,7 @@ for k in range(num3):
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac20b[k], axis=0)
-    # 2,4,1 detect 3 undetect
+# 2,4,1 detect 3 undetect
 a = int(len(tmp5) / 9)
 if a == 0:
     trac21 = []
@@ -821,7 +821,7 @@ for k in range(num3):
         tmp5 = np.append(tmp5, tmp4)
     elif len(res) == 0:
         tmp4d = np.append(tmp4d, trac21b[k], axis=0)
-    # 2,4,5 detect 1,3 undetect
+# 2,4,5 detect 1,3 undetect
 # revised 2020.2.3
 if len(tmp5) == 0:
     pass
@@ -1091,8 +1091,7 @@ else:
             # error in magnitude m_err = 1.0857/SNR
             # Noise in ADU
             mage = np.round(1.0857 / SNR, decimals=3)
-            result.append(
-                [i + 1 + l, trac27[l, m, 0], trac27[l, m, 1], trac27[l, m, 2], mag, mage, xypix[0], xypix[1], fil1])
+            result.append([i + 1 + l, trac27[l, m, 0], trac27[l, m, 1], trac27[l, m, 2], mag, mage, xypix[0], xypix[1], fil1])
 
     # result2 = np.array(result)
     result2 = np.array(result, dtype='object')  # revised by N.M 2020.12.14

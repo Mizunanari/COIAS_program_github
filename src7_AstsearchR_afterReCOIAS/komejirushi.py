@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*
 
-# path_name = os.getcwd()
 # detect list
 tmp1 = "pre_repo.txt"
 tmp2 = "send_mpc.txt"
