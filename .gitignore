@@ -8,6 +8,9 @@ findOrb/astephem
 findOrb/riseset3
 findOrb/jd
 findOrb/*.a
+__pycache__
+mktracklet_opt.c
+mktracklet_opt.cpython-38-darwin.so
 
 data/*
 !data/.gitkeep
