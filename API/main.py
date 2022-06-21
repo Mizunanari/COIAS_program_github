@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from astropy.io import fits
 
 
 COIAS_DES = 'coiasフロントアプリからアクセスされるAPIです。\
@@ -120,6 +121,21 @@ def get_numbered_disp(pj: int = -1):
     result = split_list(result.split(), 4)
 
     return {"result": result}
+
+
+@app.get("/fits_size", summary="fitsファイルのサイズを取得", tags=["files"])
+def get_FITS_SIZE(pj: int = -1):
+    fits_path = pj_path(pj) / "warp1_bin.fits"
+
+    if not fits_path.is_file():
+        raise HTTPException(status_code=404)
+
+    FITSSIZES = (
+        fits.open(fits_path)[0].header["NAXIS1"],
+        fits.open(fits_path)[0].header["NAXIS2"],
+    )
+
+    return {"result": FITSSIZES}
 
 
 @app.post("/uploadfiles/", summary="fileアップロード", tags=["files"])
@@ -406,6 +422,54 @@ def run_memo(output_list: list, pj: int = -1):
     return {"memo.txt": result}
 
 
+@app.put("/memo_manual", summary="手動測定の出力", tags=["command"])
+def run_memo_manual(output_list: list, pj: int = -1):
+    """
+    memo_manual.txtへ出力
+    """
+
+    # fmt: off
+    """
+    bodyの配列からmemo_manual.txtを出力します。
+
+    __body__
+
+    ```JSON
+    [
+        "000001",
+        "000010",
+        "000013",
+        "000012",
+        "000005",
+        "000003",
+        "000004",
+        "000009",
+        "000000",
+        "000006",
+        "000014"
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+
+    memo_manual = ""
+    result = ""
+    memo_manual_path = pj_path(pj) / "memo_manual.txt"
+
+    for i, list in enumerate(output_list):
+        memo_manual = memo_manual + str(list)
+        if not i == (len(output_list) - 1):
+            memo_manual = memo_manual + "\n"
+
+    with memo_manual_path.open(mode="w") as f:
+        f.write(memo_manual)
+
+    with memo_manual_path.open(mode="r") as f:
+        result = f.read()
+
+    return {"memo_manual.txt": result}
+
+
 @app.put("/memo2", summary="memo2を書き込み", tags=["files"])
 def write_memo2(text: str, pj: int = -1):
     # fmt: off
@@ -507,7 +571,7 @@ prempsearchCを25行目で分割し、それぞれ別のAPIで動作させます
 連続して実行するとサーバーから情報を取得できないことがあるためです。
 K.S. 2022/4/28 prempsearchCスクリプトを明示的に2つに分割
 """
-#P_C_SPLIT_LINE = 41
+# P_C_SPLIT_LINE = 41
 
 
 @app.put("/prempsearchC-before", summary="精密軌道取得 前処理", tags=["command"])
@@ -702,7 +766,7 @@ def run_astsearch_manual(pj: int = -1):
     4行目を飛ばしてastsearch_manualを実行
     """
 
-    astsearch = PROGRAM_PATH / "astsearch_manual"
+    astsearch = PROGRAM_PATH / "src8_astsearch_manual/astsearch_manual"
     script = ""
     count = 1
 
