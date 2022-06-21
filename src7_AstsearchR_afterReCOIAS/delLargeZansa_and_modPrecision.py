@@ -24,11 +24,12 @@ try:
     outputLines = []
 
     for i in range(len(inputLines)):
-        Xres = float(inputLines[i][88:93])
-        Yres = float(inputLines[i][99:103])
+        contents = inputLines[i].split()
+        Xres = float(contents[14])
+        Yres = float(contents[15])
 
         if (abs(Xres) < 0.7) and (abs(Yres) < 0.7):
-            str_list = list(inputLines[i][1:81]) + list("\n")
+            str_list = list(inputLines[i][0:80]) + list("\n")
 
             if sys.argv[1] == "1":
                 str_list[55] = ' '
