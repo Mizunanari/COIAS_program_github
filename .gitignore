@@ -21,3 +21,5 @@ API/__pycache__/
 .DS_Store
 
 .pytest_cache
+
+mktracklet_opt.cpython-39-x86_64-linux-gnu.so

@@ -26,11 +26,18 @@ ubuntuでのconda環境構築にもちいる。
 
 ## conda コマンド
 
+###　環境削除
+
+```bash
+conda remove -n coias --all
+```
+
 ### 環境構築
 
 ```
 # 最新版を入れる場合
-conda env create -n coias -f ./env/mac_env.yml
+conda env create -n coias -f ./env/env.yml
+
 # 固定されたバージョンを導入するの場合
 conda env create -n coias -f ./env/ubuntu_env.yml
 ```
