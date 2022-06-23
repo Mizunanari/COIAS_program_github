@@ -15,6 +15,7 @@ dependencies:
   - astroquery=0.4.6
   - attrs=21.4.0
   - beautifulsoup4=4.11.1
+  - lxml=4.8.0
   - black=19.10b0
   - blas=1.0
   - blosc=1.21.0
