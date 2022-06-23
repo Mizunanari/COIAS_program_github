@@ -5,7 +5,7 @@ import pathlib
 import json
 from datetime import datetime
 from fastapi import FastAPI, HTTPException, UploadFile, status
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from astropy.io import fits
@@ -262,7 +262,7 @@ def run_get_project_list():
             log = json.loads(conf_json)
 
     else:
-        return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
+        raise HTTPException(status_code=404)
 
     # プロジェクトディレクトリpathを作成
     file_name = str(log["file_list"][-1])
@@ -316,7 +316,7 @@ def run_get_project(pj: int = -1):
             log = json.loads(conf_json)
 
     else:
-        return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
+        raise HTTPException(status_code=404)
 
     # プロジェクトディレクトリを作成
     file_name = str(log["file_list"][-1])
@@ -336,7 +336,7 @@ def run_deletefiles():
         if f.is_file:
             f.unlink()
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="NO CONTENT")
 
 
 @app.put("/copy", summary="プロジェクトから「tmp_image」へpng画像コピー", tags=["files"])
@@ -531,7 +531,7 @@ def run_preprocess():
 
     subprocess.run(["preprocess"])
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="preprocess was successfully done and No Content in Body")
 
 
 @app.put("/startsearch2R", summary="ビギニング&マスク", tags=["command"])
@@ -545,7 +545,7 @@ def run_startsearch2R(binning: int = 2, pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["startsearch2R"], input=binning, encoding="UTF-8")
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="startsearch2R was successfully done and No Content in Body")
 
 
 @app.put("/fits2png", summary="画像変換", tags=["command"])
@@ -554,7 +554,7 @@ def run_fits2png(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["fits2png"])
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="fits2png was successfully done and No Content in Body")
 
 
 @app.put("/findsource", summary="光源検出", tags=["command"])
@@ -563,7 +563,7 @@ def run_findsource(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["findsource"])
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="findsource was successfully done and No Content in Body")
 
 
 """
@@ -598,7 +598,9 @@ def run_prempsearchC_before(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["prempsearchC-before"], shell=True)
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(
+        status_code=204, detail="prempsearchC-before was successfully done and No Content in Body"
+    )
 
 
 @app.put("/prempsearchC-after", summary="精密軌道取得 後処理", tags=["command"])
@@ -633,7 +635,9 @@ def run_prempsearchC_after(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["prempsearchC-after"], shell=True)
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(
+        status_code=204, detail="prempsearchC-after was successfully done and No Content in Body"
+    )
 
 
 @app.put("/astsearch_new", summary="自動検出", tags=["command"])
@@ -642,7 +646,7 @@ def run_astsearch_new(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["astsearch_new"])
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="astsearch_new was successfully done and No Content in Body")
 
 
 @app.put(
@@ -661,7 +665,7 @@ def run_AstsearchR(binning: int = 2, pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["AstsearchR"], input=binning, encoding="UTF-8")
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="AstsearchR was successfully done and No Content in Body")
 
 
 @app.put("/prempedit", summary="MPCフォーマットに再整形", tags=["command"])
@@ -670,7 +674,7 @@ def run_prempedit(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["prempedit"])
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="prempedit was successfully done and No Content in Body")
 
 
 @app.put("/prempedit3", summary="出力ファイル整形", tags=["command"])
@@ -679,7 +683,7 @@ def run_prempedit3(num: int, pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["prempedit3.py", str(num)])
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="prempedit3 was successfully done and No Content in Body")
 
 
 @app.put("/redisp", summary="再描画による確認作業", tags=["command"])
@@ -757,7 +761,7 @@ def run_rename(pj: int = -1):
     to_path = pj_path(pj) / "send_mpc.txt"
     shutil.copy(from_path, to_path)
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=204, detail="rename was successfully done and No Content in Body")
 
 
 @app.put("/astsearch_manual", summary="手動再測定モード", tags=["command"])
@@ -790,7 +794,9 @@ def run_astsearch_manual(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run([script], shell=True)
 
-    return JSONResponse(status_code=status.HTTP_200_OK)
+    raise HTTPException(
+        status_code=204, detail="astsearch_manual was successfully done and No Content in Body"
+    )
 
 
 def split_list(list, n):
