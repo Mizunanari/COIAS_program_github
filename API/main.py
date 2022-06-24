@@ -648,6 +648,15 @@ def run_AstsearchR(binning: int = 2, pj: int = -1, status_code=200):
     subprocess.run(["AstsearchR"], input=binning, encoding="UTF-8")
 
 
+@app.put(
+    "/getMPCORB_and_mpc2edb", summary="出力ファイル整形", tags=["command"], status_code=200
+)
+def run_getMPCORB_and_mpc2edb(pj: int = -1):
+
+    os.chdir(pj_path(pj).as_posix())
+    subprocess.run(["getMPCORB_and_mpc2edb_for_button"])
+
+
 @app.put("/prempedit", summary="MPCフォーマットに再整形", tags=["command"], status_code=200)
 def run_prempedit(pj: int = -1):
     """"""
