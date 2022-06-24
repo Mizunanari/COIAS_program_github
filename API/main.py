@@ -210,7 +210,7 @@ async def create_upload_files(files: list[UploadFile]):
     return {"tmp_files_projects": files_dir, "project_files": project_files, "log": log}
 
 
-@app.get("/project-list", summary="projectのリストを返却します", tags=["files"], status_code=204)
+@app.get("/project-list", summary="projectのリストを返却します", tags=["files"], status_code=200)
 def run_get_project_list():
     # fmt:off
     """
@@ -693,6 +693,31 @@ def run_redisp(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["redisp"])
 
+    redisp_path = pj_path(pj) / "redisp.txt"
+
+    if not redisp_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with redisp_path.open() as f:
+        result = f.read()
+
+    if result == "":
+        raise HTTPException(status_code=404)
+
+    result = split_list(result.split(), 4)
+
+    return {"result": result}
+
+
+@app.put(
+    "/AstsearchR_between_COIAS_and_ReCOIAS",
+    summary="prempedit, prempedit3, redispを一つにしたもの",
+    tags=["command"],
+)
+def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
+
+    os.chdir(pj_path(pj).as_posix())
+    subprocess.run(["AstsearchR_between_COIAS_and_ReCOIAS", str(num)])
     redisp_path = pj_path(pj) / "redisp.txt"
 
     if not redisp_path.is_file():
