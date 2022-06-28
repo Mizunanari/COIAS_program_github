@@ -420,6 +420,86 @@ def run_memo(output_list: list, pj: int = -1):
     return {"memo.txt": result}
 
 
+@app.get("/memo", summary="memoを取得", tags=["files"])
+def get_memo(pj: int = -1):
+    # fmt: off
+    """
+    memo.txtを出力します。
+
+    __body__
+
+    ```JSON
+    [
+        "000001",
+        "000010",
+        "000013",
+        "000012",
+        "000005",
+        "000003",
+        "000004",
+        "000009",
+        "000000",
+        "000006",
+        "000014"
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+
+    memo_path = pj_path(pj) / "memo.txt"
+
+    if not memo_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with memo_path.open() as f:
+        result = f.read()
+
+    if result == "":
+        raise HTTPException(status_code=404)
+
+    return {"memo": result.split("\n")}
+
+
+@app.get("/memo_manual", summary="memo_manualを取得", tags=["files"])
+def get_memomanual(pj: int = -1):
+    # fmt: off
+    """
+    memo_manual.txtを出力します。
+
+    __body__
+
+    ```JSON
+    [
+        "000001",
+        "000010",
+        "000013",
+        "000012",
+        "000005",
+        "000003",
+        "000004",
+        "000009",
+        "000000",
+        "000006",
+        "000014"
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+
+    memo_path = pj_path(pj) / "memo_manual.txt"
+
+    if not memo_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with memo_path.open() as f:
+        result = f.read()
+
+    if result == "":
+        raise HTTPException(status_code=404)
+
+    return {"memo_manual": result.split("\n")}
+
+
 @app.put("/memo_manual", summary="手動測定の出力", tags=["command"])
 def run_memo_manual(output_list: list, pj: int = -1):
     """
@@ -522,12 +602,6 @@ def write_listb3(text: str, pj: int = -1):
         result = f.read()
 
     return {"listb3.txt": result}
-
-
-@app.put("/preprocess", summary="最新のMPCデータを取得", tags=["command"], status_code=200)
-def run_preprocess():
-
-    subprocess.run(["preprocess"])
 
 
 @app.put("/startsearch2R", summary="ビギニング&マスク", tags=["command"], status_code=200)
@@ -645,7 +719,8 @@ def run_AstsearchR(binning: int = 2, pj: int = -1, status_code=200):
         binning = str(binning)
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["AstsearchR"], input=binning, encoding="UTF-8")
+    result = subprocess.run(["AstsearchR"], input=binning, encoding="UTF-8")
+    print(str(result.returncode)[-1])
 
 
 @app.put(
