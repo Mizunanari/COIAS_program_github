@@ -87,6 +87,22 @@ def get_unknown_disp(pj: int = -1):
     return {"result": result}
 
 
+@app.get("/log", summary="log.txtを配列で取得", tags=["files"])
+def get_log():
+    log_path = PROGRAM_PATH / "log.txt"
+
+    if not log_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with log_path.open() as f:
+        result = f.read()
+
+    if result == "":
+        raise HTTPException(status_code=404)
+
+    return {"result": result.split("\n")}
+
+
 @app.get("/karifugo_disp", summary="karifugo_disp.txtを配列で取得", tags=["files"])
 def get_karifugo_disp(pj: int = -1):
     disp_path = pj_path(pj) / "karifugo_disp.txt"
@@ -604,6 +620,14 @@ def write_listb3(text: str, pj: int = -1):
     return {"listb3.txt": result}
 
 
+@app.put("/preprocess", summary="最新のMPCデータを取得", tags=["command"], status_code=200)
+def run_preprocess():
+
+    result = subprocess.run(["preprocess"])
+    errorMessage = errorHandling(result.returncode)
+    return errorMessage
+
+
 @app.put("/startsearch2R", summary="ビギニング&マスク", tags=["command"], status_code=200)
 def run_startsearch2R(binning: int = 2, pj: int = -1):
 
@@ -613,7 +637,9 @@ def run_startsearch2R(binning: int = 2, pj: int = -1):
         binning = str(binning)
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["startsearch2R"], input=binning, encoding="UTF-8")
+    result = subprocess.run(["startsearch2R"], input=binning, encoding="UTF-8")
+    errorMessage = errorHandling(result.returncode)
+    return errorMessage
 
 
 @app.put("/fits2png", summary="画像変換", tags=["command"], status_code=200)
@@ -662,7 +688,9 @@ def run_prempsearchC_before(pj: int = -1):
     """
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["prempsearchC-before"], shell=True)
+    result = subprocess.run(["prempsearchC-before"], shell=True)
+    errorMessage = errorHandling(result.returncode)
+    return errorMessage
 
 
 @app.put("/prempsearchC-after", summary="精密軌道取得 後処理", tags=["command"], status_code=200)
@@ -695,14 +723,18 @@ def run_prempsearchC_after(pj: int = -1):
     """
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["prempsearchC-after"], shell=True)
+    result = subprocess.run(["prempsearchC-after"], shell=True)
+    errorMessage = errorHandling(result.returncode)
+    return errorMessage
 
 
 @app.put("/astsearch_new", summary="自動検出", tags=["command"], status_code=200)
 def run_astsearch_new(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["astsearch_new"])
+    result = subprocess.run(["astsearch_new"])
+    errorMessage = errorHandling(result.returncode)
+    return errorMessage
 
 
 @app.put(
@@ -801,7 +833,8 @@ def run_redisp(pj: int = -1):
 def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["AstsearchR_between_COIAS_and_ReCOIAS", str(num)])
+    resultError = subprocess.run(["AstsearchR_between_COIAS_and_ReCOIAS", str(num)])
+    errorMessage = errorHandling(resultError.returncode)
     redisp_path = pj_path(pj) / "redisp.txt"
 
     if not redisp_path.is_file():
@@ -815,14 +848,15 @@ def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
     result = split_list(result.split(), 4)
 
-    return {"result": result}
+    return {"result": result}, errorMessage
 
 
 @app.put("/AstsearchR_afterReCOIAS", summary="再描画による確認作業", tags=["command"])
 def run_Astsearch_afterReCOIAS(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["AstsearchR_afterReCOIAS"])
+    resultError = subprocess.run(["AstsearchR_afterReCOIAS"])
+    errorMessage = errorHandling(resultError.returncode)
 
     send_path = pj_path(pj) / "send_mpc.txt"
     result = ""
@@ -836,7 +870,7 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
     if result == "":
         raise HTTPException(status_code=404)
 
-    return {"send_mpc": result}
+    return {"send_mpc": result}, errorMessage
 
 
 @app.put(
@@ -880,7 +914,9 @@ def run_astsearch_manual(pj: int = -1):
     script = script + "\necho astsearch_manualが完了"
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run([script], shell=True)
+    result = subprocess.run([script], shell=True)
+    errorMessage = errorHandling(result.returncode)
+    return errorMessage
 
 
 def split_list(list, n):
@@ -910,3 +946,53 @@ def pj_path(pj):
     path = FILES_PATH / str(file_name)
 
     return path
+
+
+def errorHandling(errorNumber: int):
+    errorList = {"place": "正常終了", "reason": "正常終了"}
+
+    if errorNumber != 0:
+
+        numString = str(errorNumber)
+
+        if numString[-2] == "1":
+            errorList.update({"place": "事前処理"})
+        elif numString[-2] == "2":
+            errorList.update({"place": "ビニングマスク"})
+        elif numString[-2] == "3":
+            errorList.update({"place": "軌道取得（確定番号）"})
+        elif numString[-2] == "4":
+            errorList.update({"place": "軌道取得（仮符号）"})
+        elif numString[-2] == "5":
+            errorList.update({"place": "自動検出"})
+        elif numString[-2] == "6":
+            errorList.update({"place": "探索モード後処理"})
+        elif numString[-2] == "7":
+            errorList.update({"place": "レポートモード前処理"})
+        elif numString[-2] == "8":
+            errorList.update({"place": "手動測定後処理"})
+        else:
+            return errorList
+
+        if numString[-1] == "1":
+            errorList.update({"reason": "5枚のwrap画像をアップロードしてから解析をして下さい。"})
+        elif numString[-1] == "2":
+            errorList.update({"reason": "インターネットに接続してから解析をして下さい。"})
+        elif numString[-1] == "3":
+            errorList.update({"reason": "軌道取得を数回やり直して下さい。"})
+        elif numString[-1] == "4":
+            errorList.update(
+                {
+                    "reason": "必要な中間ファイルがありません。全自動処理を中止し、いくつか前の適切な処理からやり直して下さい。数回やり直してもエラーが出る場合、開発者にlog.txtをメールで送信して下さい。Downloadsボタンからlog.txtをダウンロードできます。"
+                }
+            )
+        elif numString[-1] == "5":
+            errorList.update(
+                {
+                    "reason": "予期せぬエラーが発生しました。数回やり直してもエラーが出る場合、開発者にlog.txtをメールで送信して下さい。Downloadsボタンからlog.txtをダウンロードできます。"
+                }
+            )
+        else:
+            return errorList
+
+    return errorList
