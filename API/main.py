@@ -848,7 +848,9 @@ def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
     result = split_list(result.split(), 4)
 
-    return {"result": result}, errorMessage
+    errorMessage.update({"result": result})
+
+    return errorMessage
 
 
 @app.put("/AstsearchR_afterReCOIAS", summary="再描画による確認作業", tags=["command"])
@@ -870,7 +872,33 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
     if result == "":
         raise HTTPException(status_code=404)
 
-    return {"send_mpc": result}, errorMessage
+    errorMessage.update({"send_mpc": result})
+
+    return errorMessage
+
+
+@app.put("/AstsearchR_after_manual", summary="手動測定：再描画による確認作業", tags=["command"])
+def run_AstsearchR_after_manual(pj: int = -1):
+
+    os.chdir(pj_path(pj).as_posix())
+    resultError = subprocess.run(["AstsearchR_after_manual"])
+    errorMessage = errorHandling(resultError.returncode)
+
+    send_path = pj_path(pj) / "reredisp.txt"
+    result = ""
+
+    with send_path.open(mode="r") as f:
+        result = f.read()
+
+    if not send_path.is_file():
+        raise HTTPException(status_code=404)
+
+    if result == "":
+        raise HTTPException(status_code=404)
+
+    errorMessage.update({"reredisp": result})
+
+    return errorMessage
 
 
 @app.put(
