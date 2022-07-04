@@ -854,13 +854,14 @@ def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
 
 @app.put("/AstsearchR_afterReCOIAS", summary="再描画による確認作業", tags=["command"])
-def run_Astsearch_afterReCOIAS(pj: int = -1):
+def run_Astsearch_afterReCOIAS(isManual: bool, pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     resultError = subprocess.run(["AstsearchR_afterReCOIAS"])
     errorMessage = errorHandling(resultError.returncode)
 
-    send_path = pj_path(pj) / "send_mpc.txt"
+    mpcFileName = "mpc4_automanual.txt" if isManual else "send_mpc.txt"
+    send_path = pj_path(pj) / mpcFileName
     result = ""
 
     with send_path.open(mode="r") as f:
