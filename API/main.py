@@ -752,7 +752,6 @@ def run_AstsearchR(binning: int = 2, pj: int = -1, status_code=200):
 
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["AstsearchR"], input=binning, encoding="UTF-8")
-    print(str(result.returncode)[-1])
 
 
 @app.put(
@@ -854,14 +853,13 @@ def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
 
 @app.put("/AstsearchR_afterReCOIAS", summary="再描画による確認作業", tags=["command"])
-def run_Astsearch_afterReCOIAS(isManual: bool, pj: int = -1):
+def run_Astsearch_afterReCOIAS(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     resultError = subprocess.run(["AstsearchR_afterReCOIAS"])
     errorMessage = errorHandling(resultError.returncode)
 
-    mpcFileName = "mpc4_automanual.txt" if isManual else "send_mpc.txt"
-    send_path = pj_path(pj) / mpcFileName
+    send_path = pj_path(pj) / "send_mpc.txt"
     result = ""
 
     with send_path.open(mode="r") as f:
