@@ -946,6 +946,23 @@ def run_astsearch_manual(pj: int = -1):
     return errorMessage
 
 
+@app.get("/final_all", summary="final_allを取得", tags=["files"])
+def get_finalall(pj: int = -1):
+
+    final_all_path = pj_path(pj) / "final_all.txt"
+
+    if not final_all_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with final_all_path.open() as f:
+        result = f.read()
+
+    if result == "":
+        raise HTTPException(status_code=404)
+
+    return {"finalall": result}
+
+
 def split_list(list, n):
     """
     リストをサブリストに分割する
