@@ -4,7 +4,7 @@ import shutil
 import pathlib
 import json
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, UploadFile, status
+from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -88,8 +88,8 @@ def get_unknown_disp(pj: int = -1):
 
 
 @app.get("/log", summary="log.txtを配列で取得", tags=["files"])
-def get_log():
-    log_path = PROGRAM_PATH / "log.txt"
+def get_log(pj: int = -1):
+    log_path = pj_path(pj) / "log.txt"
 
     if not log_path.is_file():
         raise HTTPException(status_code=404)
@@ -624,8 +624,7 @@ def write_listb3(text: str, pj: int = -1):
 def run_preprocess():
 
     result = subprocess.run(["preprocess"])
-    errorMessage = errorHandling(result.returncode)
-    return errorMessage
+    errorHandling(result.returncode)
 
 
 @app.put("/startsearch2R", summary="ビギニング&マスク", tags=["command"], status_code=200)
@@ -638,8 +637,7 @@ def run_startsearch2R(binning: int = 2, pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["startsearch2R"], input=binning, encoding="UTF-8")
-    errorMessage = errorHandling(result.returncode)
-    return errorMessage
+    errorHandling(result.returncode)
 
 
 @app.put("/fits2png", summary="画像変換", tags=["command"], status_code=200)
@@ -689,8 +687,7 @@ def run_prempsearchC_before(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["prempsearchC-before"], shell=True)
-    errorMessage = errorHandling(result.returncode)
-    return errorMessage
+    errorHandling(result.returncode)
 
 
 @app.put("/prempsearchC-after", summary="精密軌道取得 後処理", tags=["command"], status_code=200)
@@ -724,8 +721,7 @@ def run_prempsearchC_after(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["prempsearchC-after"], shell=True)
-    errorMessage = errorHandling(result.returncode)
-    return errorMessage
+    errorHandling(result.returncode)
 
 
 @app.put("/astsearch_new", summary="自動検出", tags=["command"], status_code=200)
@@ -733,25 +729,7 @@ def run_astsearch_new(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["astsearch_new"])
-    errorMessage = errorHandling(result.returncode)
-    return errorMessage
-
-
-@app.put(
-    "/AstsearchR",
-    summary="全自動処理",
-    tags=["command"],
-    status_code=status.HTTP_400_BAD_REQUEST,
-)
-def run_AstsearchR(binning: int = 2, pj: int = -1, status_code=200):
-
-    if binning != 2 and binning != 4:
-        raise HTTPException(status_code=400)
-    else:
-        binning = str(binning)
-
-    os.chdir(pj_path(pj).as_posix())
-    result = subprocess.run(["AstsearchR"], input=binning, encoding="UTF-8")
+    errorHandling(result.returncode)
 
 
 @app.put(
@@ -760,7 +738,9 @@ def run_AstsearchR(binning: int = 2, pj: int = -1, status_code=200):
 def run_getMPCORB_and_mpc2edb(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["getMPCORB_and_mpc2edb_for_button"])
+    result = subprocess.run(["getMPCORB_and_mpc2edb_for_button"])
+    print(result.returncode)
+    errorHandling(result.returncode)
 
 
 @app.put("/prempedit", summary="MPCフォーマットに再整形", tags=["command"], status_code=200)
@@ -772,7 +752,6 @@ def run_prempedit(pj: int = -1):
 
 @app.put("/prempedit3", summary="出力ファイル整形", tags=["command"], status_code=200)
 def run_prempedit3(num: int, pj: int = -1):
-
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["prempedit3.py", str(num)])
 
@@ -833,7 +812,7 @@ def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     resultError = subprocess.run(["AstsearchR_between_COIAS_and_ReCOIAS", str(num)])
-    errorMessage = errorHandling(resultError.returncode)
+    errorHandling(resultError.returncode)
     redisp_path = pj_path(pj) / "redisp.txt"
 
     if not redisp_path.is_file():
@@ -847,9 +826,7 @@ def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
     result = split_list(result.split(), 4)
 
-    errorMessage.update({"result": result})
-
-    return errorMessage
+    return result
 
 
 @app.put("/AstsearchR_afterReCOIAS", summary="再描画による確認作業", tags=["command"])
@@ -857,7 +834,7 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     resultError = subprocess.run(["AstsearchR_afterReCOIAS"])
-    errorMessage = errorHandling(resultError.returncode)
+    errorHandling(resultError.returncode)
 
     send_path = pj_path(pj) / "send_mpc.txt"
     result = ""
@@ -871,9 +848,7 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
     if result == "":
         raise HTTPException(status_code=404)
 
-    errorMessage.update({"send_mpc": result})
-
-    return errorMessage
+    return {"send_mpc": result}
 
 
 @app.put("/AstsearchR_after_manual", summary="手動測定：再描画による確認作業", tags=["command"])
@@ -881,7 +856,7 @@ def run_AstsearchR_after_manual(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     resultError = subprocess.run(["AstsearchR_after_manual"])
-    errorMessage = errorHandling(resultError.returncode)
+    errorHandling(resultError.returncode)
 
     send_path = pj_path(pj) / "reredisp.txt"
     result = ""
@@ -895,9 +870,7 @@ def run_AstsearchR_after_manual(pj: int = -1):
     if result == "":
         raise HTTPException(status_code=404)
 
-    errorMessage.update({"reredisp": result})
-
-    return errorMessage
+    return {"reredisp": result}
 
 
 @app.put(
@@ -942,8 +915,7 @@ def run_astsearch_manual(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run([script], shell=True)
-    errorMessage = errorHandling(result.returncode)
-    return errorMessage
+    errorHandling(result.returncode)
 
 
 @app.get("/final_all", summary="final_allを取得", tags=["files"])
@@ -978,16 +950,23 @@ def pj_path(pj):
 
     log_path = FILES_PATH / "log"
 
-    with log_path.open(mode="r") as conf:
-        conf_json = conf.read()
+    path = ""
 
-    if not conf_json == "":
-        log = json.loads(conf_json)
+    if log_path.is_file():
+        with log_path.open(mode="r") as conf:
+            conf_json = conf.read()
+
+        if not conf_json == "":
+            log = json.loads(conf_json)
+        else:
+            return
+
+        file_name = log["file_list"][pj]
+        path = FILES_PATH / str(file_name)
     else:
-        return
-
-    file_name = log["file_list"][pj]
-    path = FILES_PATH / str(file_name)
+        raise HTTPException(
+            404, detail={"place": "tmp_files", "reason": "log fileがありません"}
+        )
 
     return path
 
@@ -1038,5 +1017,7 @@ def errorHandling(errorNumber: int):
             )
         else:
             return errorList
+
+        raise HTTPException(status_code=400, detail=errorList)
 
     return errorList
