@@ -141,7 +141,7 @@ def get_numbered_disp(pj: int = -1):
 
 @app.get("/fits_size", summary="fitsファイルのサイズを取得", tags=["files"])
 def get_FITS_SIZE(pj: int = -1):
-    fits_path = pj_path(pj) / "warp1_bin.fits"
+    fits_path = pj_path(pj) / "warp01_bin.fits"
 
     if not fits_path.is_file():
         raise HTTPException(status_code=404)
