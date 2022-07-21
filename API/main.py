@@ -542,8 +542,6 @@ def get_memomanual(pj: int = -1):
         )
         memo_manual.append(result)
 
-        print(memo_manual)
-
     return {"memo_manual": memo_manual}
 
 
@@ -798,7 +796,6 @@ def run_getMPCORB_and_mpc2edb(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["getMPCORB_and_mpc2edb_for_button"])
-    print(result.returncode)
     errorHandling(result.returncode)
 
 
