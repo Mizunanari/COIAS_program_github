@@ -4,11 +4,13 @@ import shutil
 import pathlib
 import json
 from datetime import datetime
+import traceback
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from astropy.io import fits
+from PIL import Image
 
 
 COIAS_DES = 'coiasフロントアプリからアクセスされるAPIです。\
@@ -513,7 +515,36 @@ def get_memomanual(pj: int = -1):
     if result == "":
         raise HTTPException(status_code=404)
 
-    return {"memo_manual": result.split("\n")}
+    memo_manual = []
+    for line in result.split("\n"):
+        splitedLine = line.split(" ")
+        result = (
+            splitedLine[0]
+            + " "
+            + splitedLine[1]
+            + " "
+            + convertFits2PngCoords([int(splitedLine[2]), int(splitedLine[3])])
+        )
+        result = (
+            result
+            + " "
+            + convertFits2PngCoords([int(splitedLine[4]), int(splitedLine[5])])
+        )
+        result = (
+            result
+            + " "
+            + convertFits2PngCoords([int(splitedLine[6]), int(splitedLine[7])])
+        )
+        result = (
+            result
+            + " "
+            + convertFits2PngCoords([int(splitedLine[8]), int(splitedLine[9])])
+        )
+        memo_manual.append(result)
+
+        print(memo_manual)
+
+    return {"memo_manual": memo_manual}
 
 
 @app.put("/memo_manual", summary="手動測定の出力", tags=["command"])
@@ -551,9 +582,37 @@ def run_memo_manual(output_list: list, pj: int = -1):
     memo_manual_path = pj_path(pj) / "memo_manual.txt"
 
     for i, list in enumerate(output_list):
-        memo_manual = memo_manual + str(list)
-        if not i == (len(output_list) - 1):
-            memo_manual = memo_manual + "\n"
+        for list_obj in list:
+            center = convertPng2FitsCoords(
+                [int(list_obj["center"]["x"]), int(list_obj["center"]["y"])]
+            )
+            translated_line = (
+                str(list_obj["name"]) + " " + str(list_obj["page"]) + " " + center
+            )
+            translated_line = (
+                translated_line
+                + " "
+                + convertPng2FitsCoords(
+                    [int(list_obj["actualA"]["x"]), int(list_obj["actualA"]["y"])]
+                )
+            )
+            translated_line = (
+                translated_line
+                + " "
+                + convertPng2FitsCoords(
+                    [int(list_obj["actualB"]["x"]), int(list_obj["actualB"]["y"])]
+                )
+            )
+            translated_line = (
+                translated_line
+                + " "
+                + convertPng2FitsCoords(
+                    [int(list_obj["actualC"]["x"]), int(list_obj["actualC"]["y"])]
+                )
+            )
+            memo_manual = memo_manual + str(translated_line)
+            if not i == (len(output_list) - 1):
+                memo_manual = memo_manual + "\n"
 
     with memo_manual_path.open(mode="w") as f:
         f.write(memo_manual)
@@ -627,7 +686,7 @@ def run_preprocess():
     errorHandling(result.returncode)
 
 
-@app.put("/startsearch2R", summary="ビギニング&マスク", tags=["command"], status_code=200)
+@app.put("/startsearch2R", summary="ビニング&マスク", tags=["command"], status_code=200)
 def run_startsearch2R(binning: int = 2, pj: int = -1):
 
     if binning != 2 and binning != 4:
@@ -1014,3 +1073,64 @@ def errorHandling(errorNumber: int):
         raise HTTPException(status_code=400, detail=errorList)
 
     return errorList
+
+
+# Functions for converting fits coords between png and fits #
+def convertFits2PngCoords(fitsPosition):
+    try:
+        images_pj_path = pj_path(-1)
+        PNGSIZES = Image.open(images_pj_path / "01_disp-coias.png").size
+        FITSSIZES = (
+            fits.open(images_pj_path / "warp01_bin.fits")[0].header["NAXIS1"],
+            fits.open(images_pj_path / "warp01_bin.fits")[0].header["NAXIS2"],
+        )
+        if fitsPosition[0] > FITSSIZES[0] or fitsPosition[1] > FITSSIZES[1]:
+            raise ValueError(
+                "invalid fits positions! X={0:d} Xmax={1:d} Y={2:d} Ymax={3:d}".format(
+                    fitsPosition[0], FITSSIZES[0], fitsPosition[1], FITSSIZES[1]
+                )
+            )
+        fitsXRelPos = float(fitsPosition[0]) / float(FITSSIZES[0])
+        fitsYRelPos = float(fitsPosition[1]) / float(FITSSIZES[1])
+
+        pngXRelPos = fitsXRelPos
+        pngYRelPos = 1.0 - fitsYRelPos
+
+        pngXPosition = int(pngXRelPos * PNGSIZES[0])
+        pngYPosition = int(pngYRelPos * PNGSIZES[1])
+        return str(pngXPosition) + " " + str(pngYPosition)
+    except FileNotFoundError:
+        print("1st png file or fits file are not found!")
+        print(traceback.format_exc())
+
+
+def convertPng2FitsCoords(pngPosition):
+    try:
+        images_pj_path = pj_path(-1)
+        PNGSIZES = Image.open(images_pj_path / "01_disp-coias.png").size
+        FITSSIZES = (
+            fits.open(images_pj_path / "warp01_bin.fits")[0].header["NAXIS1"],
+            fits.open(images_pj_path / "warp01_bin.fits")[0].header["NAXIS2"],
+        )
+        if pngPosition[0] > PNGSIZES[0] or pngPosition[1] > PNGSIZES[1]:
+            raise ValueError(
+                "invalid png positions! X={0:d} Xmax={1:d} Y={2:d} Ymax={3:d}".format(
+                    pngPosition[0], PNGSIZES[0], pngPosition[1], PNGSIZES[1]
+                )
+            )
+
+        pngXRelPos = float(pngPosition[0]) / float(PNGSIZES[0])
+        pngYRelPos = float(pngPosition[1]) / float(PNGSIZES[1])
+
+        fitsXRelPos = pngXRelPos
+        fitsYRelPos = 1.0 - pngYRelPos
+
+        fitsXPosition = int(fitsXRelPos * FITSSIZES[0])
+        fitsYPosition = int(fitsYRelPos * FITSSIZES[1])
+        return str(fitsXPosition) + " " + str(fitsYPosition)
+    except FileNotFoundError:
+        print("1st png file or fits file are not found!")
+        print(traceback.format_exc())
+
+
+######################################################################
