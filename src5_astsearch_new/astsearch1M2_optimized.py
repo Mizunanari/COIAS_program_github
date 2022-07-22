@@ -260,17 +260,18 @@ try:
                 # error
                 sigma_ron =  4.5*nbinList[image]*nbinList[image] # read out noise of HSC /nobining :4.5e S.U modified 2022/5/4
                 gain = 3.0 / nbinList[image] # gain of HSC/nobining :3.0  S.U modified 2022/5/4
-                S_star = gain * final_sum
-                SNR = np.sqrt(S_star)
+                S_star = gain * final_sum  
+                Noise = np.sqrt(S_star + ap.area * (gain * bkg_mean + sigma_ron * sigma_ron))  # S.U modified 2022/7/16
+                SNR = np.sqrt(S_star/Noise) # S.U modified 2022/7/16
                 # error in magnitude m_err = 1.0857/SNR
                 # Noise in ADU
                 mage = np.round(1.0857 / SNR, decimals=3)
 
-                result.append([idTracklet[p][k], trackletListAll[p][k].data[image][0], trackletListAll[p][k].data[image][1], trackletListAll[p][k].data[image][2], mag, mage, xypix[0], xypix[1], filList[image]])
+                result.append([idTracklet[p][k], trackletListAll[p][k].data[image][0], trackletListAll[p][k].data[image][1], trackletListAll[p][k].data[image][2], mag, mage, xypix[0], xypix[1], filList[image], image])
 
 
     result2 = np.array(result, dtype='object')  # revised by N.M 2020.12.14
-    np.savetxt("listb2.txt", result2, fmt="%d %.9f %.7f %.7f %.3f %.3f %.2f %.2f %s")
+    np.savetxt("listb2.txt", result2, fmt="%d %.9f %.7f %.7f %.3f %.3f %.2f %.2f %s %d")
     subprocess.run("sort -t ' ' -k 1,1n -k 2,2n listb2.txt -o listb2.txt", shell=True)
     ##########################################################
     end = time.time()
