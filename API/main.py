@@ -595,8 +595,8 @@ def run_memo_manual(output_list: list, pj: int = -1):
             )
             memo_manual = memo_manual + str(translated_line)
             if not (
-                list_obj["name"] == output_list[-1][0]["name"]
-                and list_obj["page"] == output_list[-1][0]["page"]
+                list_obj["name"] == output_list[-1][-1]["name"]
+                and list_obj["page"] == output_list[-1][-1]["page"]
             ):
                 memo_manual = memo_manual + "\n"
 
