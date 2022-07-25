@@ -524,19 +524,10 @@ def get_memomanual(pj: int = -1):
             + splitedLine[1]
             + " "
             + convertFits2PngCoords([int(splitedLine[2]), int(splitedLine[3])])
-        )
-        result = (
-            result
             + " "
             + convertFits2PngCoords([int(splitedLine[4]), int(splitedLine[5])])
-        )
-        result = (
-            result
             + " "
             + convertFits2PngCoords([int(splitedLine[6]), int(splitedLine[7])])
-        )
-        result = (
-            result
             + " "
             + convertFits2PngCoords([int(splitedLine[8]), int(splitedLine[9])])
         )
@@ -579,37 +570,34 @@ def run_memo_manual(output_list: list, pj: int = -1):
     result = ""
     memo_manual_path = pj_path(pj) / "memo_manual.txt"
 
-    for i, list in enumerate(output_list):
+    for list in output_list:
         for list_obj in list:
-            center = convertPng2FitsCoords(
-                [int(list_obj["center"]["x"]), int(list_obj["center"]["y"])]
-            )
             translated_line = (
-                str(list_obj["name"]) + " " + str(list_obj["page"]) + " " + center
-            )
-            translated_line = (
-                translated_line
+                str(list_obj["name"])
+                + " "
+                + str(list_obj["page"])
+                + " "
+                + convertPng2FitsCoords(
+                    [int(list_obj["center"]["x"]), int(list_obj["center"]["y"])]
+                )
                 + " "
                 + convertPng2FitsCoords(
                     [int(list_obj["actualA"]["x"]), int(list_obj["actualA"]["y"])]
                 )
-            )
-            translated_line = (
-                translated_line
                 + " "
                 + convertPng2FitsCoords(
                     [int(list_obj["actualB"]["x"]), int(list_obj["actualB"]["y"])]
                 )
-            )
-            translated_line = (
-                translated_line
                 + " "
                 + convertPng2FitsCoords(
                     [int(list_obj["actualC"]["x"]), int(list_obj["actualC"]["y"])]
                 )
             )
             memo_manual = memo_manual + str(translated_line)
-            if not i == (len(output_list) - 1):
+            if not (
+                list_obj["name"] == output_list[-1][0]["name"]
+                and list_obj["page"] == output_list[-1][0]["page"]
+            ):
                 memo_manual = memo_manual + "\n"
 
     with memo_manual_path.open(mode="w") as f:
