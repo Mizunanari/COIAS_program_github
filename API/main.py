@@ -673,7 +673,7 @@ def run_preprocess():
 
 
 @app.put("/startsearch2R", summary="ビニング&マスク", tags=["command"], status_code=200)
-def run_startsearch2R(binning: int = 2, pj: int = -1):
+def run_startsearch2R(binning: int = 2, pj: int = -1, sn: int = 2000):
 
     if binning != 2 and binning != 4:
         raise HTTPException(status_code=400)
@@ -681,7 +681,9 @@ def run_startsearch2R(binning: int = 2, pj: int = -1):
         binning = str(binning)
 
     os.chdir(pj_path(pj).as_posix())
-    result = subprocess.run(["startsearch2R"], input=binning, encoding="UTF-8")
+    result = subprocess.run(
+        ["startsearch2R", "sn={}".format(sn)], input=binning, encoding="UTF-8"
+    )
     errorHandling(result.returncode)
 
 
@@ -770,10 +772,12 @@ def run_prempsearchC_after(pj: int = -1):
 
 
 @app.put("/astsearch_new", summary="自動検出", tags=["command"], status_code=200)
-def run_astsearch_new(pj: int = -1):
+def run_astsearch_new(pj: int = -1, nd: int = 4, ar: int = 6):
 
     os.chdir(pj_path(pj).as_posix())
-    result = subprocess.run(["astsearch_new"])
+    cmdStr = "astsearch_new nd={} ar={}".format(nd, ar)
+    print(cmdStr)
+    result = subprocess.run(cmdStr, shell=True)
     errorHandling(result.returncode)
 
 
