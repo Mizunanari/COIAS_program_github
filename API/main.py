@@ -645,6 +645,29 @@ def get_memo2(pj: int = -1):
     return {"memo2": result}
 
 
+@app.put(
+    "/manual_name_modify_list",
+    summary="manual_name_modify_list.txtを書き込み",
+    tags=["files"],
+)
+def write_modify_list(modifiedList: list, pj: int = -1):
+    # fmt: off
+    """
+    textの配列を、manual_name_modify_list.txtに書き込みます。
+    """ # noqa
+    # fmt: on
+
+    text = ""
+    for (i, oldNewPair) in enumerate(modifiedList):
+        text = text + "{} {}".format(oldNewPair[0], oldNewPair[1])
+        if not i == len(modifiedList) - 1:
+            text = text + "\n"
+    text_path = pj_path(pj) / "manual_name_modify_list.txt"
+
+    with text_path.open(mode="w") as f:
+        f.write(text)
+
+
 @app.put("/listb3", summary="listb3を書き込み", tags=["files"])
 def write_listb3(text: str, pj: int = -1):
     # fmt: off
