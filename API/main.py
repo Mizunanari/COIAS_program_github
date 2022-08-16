@@ -855,9 +855,6 @@ def run_redisp(pj: int = -1):
 
     """  # noqa
 
-    os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["redisp"])
-
     redisp_path = pj_path(pj) / "redisp.txt"
 
     if not redisp_path.is_file():
