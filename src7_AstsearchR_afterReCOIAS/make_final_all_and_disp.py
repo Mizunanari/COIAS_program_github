@@ -8,6 +8,8 @@
 # などもfinal_all.txtに追記する.
 #
 # 入力: H_conversion_list_automanual3.txt 名前付け替えの履歴のリスト
+# 　　  newall_automanual2.txt 出力するall系データの検索に使用
+# 　　  orbital_elements_summary_web.txt 出力する軌道情報の検索に使用
 # 出力: final_all.txt
 # 　　    最終的な名前付け替えの結果まで反映されたall系ファイル
 # 　　    初期の画像ファイルの名前, 新天体の数, ウェブ版findorbで得られた軌道やサイズなどの情報も持つ
@@ -22,9 +24,17 @@ import re
 try:
     #---open output file and write header-----------------------
     outputFile = open("final_all.txt","w",newline="\n")
+    outputFile.write("---initial fits files---------------------------\n")
     originalImgNames = sorted(glob.glob('warp-*.fits'))
     for i in range(len(originalImgNames)):
         outputFile.write("{:d}: ".format(i)+originalImgNames[i]+"\n")
+    outputFile.write("------------------------------------------------\n\n")
+
+    outputFile.write("---used parameters-------------------------------\n")
+    paramFile = open("used_param.txt","r")
+    parameters = paramFile.read()
+    outputFile.write(parameters)
+    outputFile.write("------------------------------------------------\n\n")
     #-----------------------------------------------------------
 
     #---get number of new objects and name range----------------
