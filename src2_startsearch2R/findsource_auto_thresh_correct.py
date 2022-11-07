@@ -20,6 +20,7 @@ import subprocess
 import traceback
 import glob
 import readparam
+import print_progress
 from def_coias_data_path import *
 
 ### function #####################################################
@@ -59,9 +60,10 @@ def calc_mean_detection_number(detect_thresh):
 ##################################################################
 
 try:
+    print_progress.print_progress(currentCheckPoint=15)
+    
     #---definition of file and program name------------
-    program_path = coiasDataPath + "/param/"
-    default_sex_file_name = program_path+"default.sex"
+    default_sex_file_name = "default.sex"
     findsource_file_name = "findsource"
     params = readparam.readparam()
     SOURCE_NUMBER = params["sn"]
@@ -115,6 +117,7 @@ try:
         #-----------------------------------------------------------------
             
     #---------------------------------------------------------------------
+    print_progress.print_progress()
 
 except FileNotFoundError:
     print("Some previous files are not found in findsource_auto_thresh_correct.py!")
