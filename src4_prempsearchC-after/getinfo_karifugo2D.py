@@ -33,9 +33,13 @@ import glob
 from multiprocessing import Pool
 import traceback
 import requests.exceptions
+import print_progress
 
 #--function: get info from jpl horizons for a known asteroid-------------------------------
 def getinfo(args):
+    if args[3]==1:
+        print_progress.print_progress(nCheckPointsForLoop=19, nForLoop=args[5], currentForLoop=args[4])
+    
     radec =[]
     isLosedAsteroid = False
     # tentative prevention of error (2022.4.8 KS)################################
@@ -44,7 +48,6 @@ def getinfo(args):
     except ValueError:
         if args[3]==1:
             pass
-            #print("missing id="+ args[0] +" probably due to parallelization issue.")
         if args[3]==2:
             print("We cannot get information of id="+ args[0] +" from JPL.")
         isLosedAsteroid = True
@@ -126,7 +129,7 @@ try:
             NLoseAsteroids = 0
             ###############################################################################
 
-            args = [(name_list[i], time_list2, isCorrectDirectory, 1) for i in range(len(name_list))]
+            args = [(name_list[i], time_list2, isCorrectDirectory, 1, i, len(name_list)) for i in range(len(name_list))]
             with Pool(4) as p:
                 recvDictList = list(p.map(getinfo, args))
 
@@ -203,7 +206,6 @@ try:
         
             t2 = time.time()    
             elapsed_time = t2 -t1
-            print("getinfo karifugo, Elapsed time:", elapsed_time)
 
 except requests.exceptions.ConnectionError:
     print("You do not connect to the internet in getinfo_karifugo2D.py!")

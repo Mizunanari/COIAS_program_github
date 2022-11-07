@@ -36,6 +36,7 @@
 ###################################################################################
 
 ### import modules #######################################
+import sys
 import time
 import glob
 import numpy as np
@@ -46,6 +47,7 @@ import subprocess
 import traceback
 import mktracklet_opt
 import readparam
+import print_progress
 
 from photutils import CircularAperture
 from photutils import CircularAnnulus
@@ -248,9 +250,11 @@ def detect_points_from_tracklets(trackletClassList, imageIdTrac1, imageIdTrac2, 
 
 
 try:
-    print("astsearch1M2.py starts")
-    start = time.time()
-
+    ### suppress warnings ####################################
+    if not sys.warnoptions:
+        import warnings
+        warnings.simplefilter("ignore")
+    
     ### read parameters ######################################
     params = readparam.readparam()
     N_DETECT_THRESH = params["nd"]
@@ -308,12 +312,24 @@ try:
     for f in range(NImage):
         treeList.append(ss.KDTree(radecList[f], leafsize=10))
     #--------------------------------------------------
-    ##########################################################
 
+    #---count nForLoop for MAIN PART-------------------
+    nLoopTotal = 0
+    for leftTracId in range(NImage-1):
+        for rightTracId in range(leftTracId+1, NImage):
+            if 2 + (NImage - rightTracId - 1) < N_DETECT_THRESH:
+                continue
+            for predictId in range(NImage):
+                if leftTracId==predictId or rightTracId==predictId:
+                    continue
+                nLoopTotal += 1
+    #--------------------------------------------------
+    ##########################################################
 
     ### MAIN PART ############################################
     ##########################################################
     trackletListAll = []
+    nLoopDone = 0
     for leftTracId in range(NImage-1):
         for rightTracId in range(leftTracId+1, NImage):
             #If the maximum detection number for this tracklet is smaller than N_DETECT_THRESH,
@@ -331,7 +347,9 @@ try:
             for predictId in range(NImage):
                 if leftTracId==predictId or rightTracId==predictId:
                     continue
-
+                
+                print_progress.print_progress(nCheckPointsForLoop=12, nForLoop=nLoopTotal, currentForLoop=nLoopDone)
+                nLoopDone += 1
                 #---predict-------------------------------
                 detect_points_from_tracklets(trackletClassList, leftTracId, rightTracId, predictId)
                 #-----------------------------------------
@@ -348,9 +366,11 @@ try:
                 raise ValueError("Something wrong! Tracklets with NDetect < N_DETECT_THRESH survive! this NDetect={0:d}".format(trackletListAll[p][k].NDetect))
     ################################################################
 
-
+    
     ### photometry #################################################
     for image in range(NImage):
+        print_progress.print_progress(nCheckPointsForLoop=2, nForLoop=NImage, currentForLoop=image)
+        
         scidata = fits.open(warpFileNames[image])
     
         for p in range(len(trackletListAll)):
@@ -476,8 +496,6 @@ try:
     np.savetxt("listb2.txt", result2, fmt="%d %.9f %.7f %.7f %.3f %.3f %.2f %.2f %s %d")
     subprocess.run("sort -t ' ' -k 1,1n -k 2,2n listb2.txt -o listb2.txt", shell=True)
     ##########################################################
-    end = time.time()
-    print("astsearch1M2.py ends. elapsed time = {0:.2f} s".format(end-start))
     
 
 except FileNotFoundError:

@@ -19,6 +19,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.time import Time
 import visitsort
+import print_progress
 
 try:
     ## mode selection ####
@@ -39,7 +40,10 @@ try:
     if len(img_list)==0:
         raise FileNotFoundError
 
+    nLoopDone = 0
     for i in img_list:
+        print_progress.print_progress(nCheckPointsForLoop=4, nForLoop=len(img_list), currentForLoop=nLoopDone)
+        
         hdu1 = fits.open(i)
         xpix = hdu1[1].header['NAXIS1']
         ypix = hdu1[1].header['NAXIS2']
@@ -67,7 +71,6 @@ try:
         try:
             FLUXMAG0 = hdu1[0].header['FLUXMAG0']
         except KeyError as e:  ## if header 'FLUXMAG0' does not exist
-            print("Key 'FLUXMAG0' does not exist in the header and calculate it from calibration data.")
             # FLUXMAG0ERR is 10^{-4} mag. Negligible"
             entryHduIndex = hdu1[0].header["AR_HDU"] - 1
             entryHdu = hdu1[entryHduIndex]
@@ -81,8 +84,6 @@ try:
             calibrationErr = photoCalib["calibrationErr"]
             FLUXMAG0 = (1.0e+23 * 10 ** (48.6 / (-2.5)) * 1.0e+9) / calibrationMean
             fluxmag0err = (1.0e+23 * 10 ** (48.6 / (-2.5)) * 1.0e+9) / calibrationMean ** 2 * calibrationErr,
-        else:  ## if header 'FLUXMAG0' exists
-            print("Key 'FLUXMAG0' exists in the header and use the header value.")
 
         zerop1 = 2.5 * np.log10(FLUXMAG0)
 
@@ -122,6 +123,8 @@ try:
         hdunew2 = fits.ImageHDU(maskdata_bin, h1head)
         hdul = fits.HDUList([hdunew, hdunew2])
         hdul.writeto(i.replace('warp-', 'warpbin-'), overwrite=True)  # S.U modify 2021/12/9
+
+        nLoopDone += 1
 
 except FileNotFoundError:
     print("Original 5 fits files do not exist in binning.py! Please upload these files.")
