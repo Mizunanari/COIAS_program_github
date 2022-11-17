@@ -225,8 +225,6 @@ async def create_upload_files(files: list[UploadFile]):
     files_dir.sort(key=int)
     project_files.sort()
 
-    os.chdir(pj_path(-1).as_posix())
-
     return {"tmp_files_projects": files_dir, "project_files": project_files, "log": log}
 
 
