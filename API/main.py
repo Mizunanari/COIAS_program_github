@@ -689,8 +689,9 @@ def write_listb3(text: str, pj: int = -1):
 
 
 @app.put("/preprocess", summary="最新のMPCデータを取得", tags=["command"], status_code=200)
-def run_preprocess():
+def run_preprocess(pj: int = -1):
 
+    os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["preprocess"])
     errorHandling(result.returncode)
 
@@ -712,7 +713,6 @@ def run_startsearch2R(binning: int = 2, pj: int = -1, sn: int = 2000):
 
 @app.put("/fits2png", summary="画像変換", tags=["command"], status_code=200)
 def run_fits2png(pj: int = -1):
-    """未実装？"""
     os.chdir(pj_path(pj).as_posix())
     subprocess.run(["fits2png"])
 
