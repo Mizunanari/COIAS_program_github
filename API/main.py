@@ -995,6 +995,27 @@ def get_finalall(pj: int = -1):
 
     return {"finalall": result}
 
+@app.get("/progress", summary="progress.txtに記載の進捗率などの情報を取得", tags=["files"])
+def get_progress(pj: int = -1):
+    progress_path = pj_path(pj) / "progress.txt"
+
+    try:
+        f = open(progress_path,"r")
+        line = f.readline()
+        f.close()
+        
+        contents = line.split()
+        query = contents[0]
+        progress = str( int((int(contents[1])/int(contents[2]))*100.0) ) + "%"
+
+        result = {"query":query, "progress":progress}
+    except FileNotFoundError:
+        result = {"query":"initial", "progress":"0%"}
+    except Exception:
+        result = {"query":"N/A", "progress":"N/A"}
+    finally:
+        return {"result": result}
+
 
 def split_list(list, n):
     """
