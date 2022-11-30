@@ -934,19 +934,6 @@ def run_AstsearchR_after_manual(pj: int = -1):
     return {"reredisp": result}
 
 
-@app.put(
-    "/rename",
-    summary="「mpc4.txt」の複製と「send_mpc.txt」へrename",
-    tags=["command"],
-    status_code=200,
-)
-def run_rename(pj: int = -1):
-
-    from_path = pj_path(pj) / "mpc4.txt"
-    to_path = pj_path(pj) / "send_mpc.txt"
-    shutil.copy(from_path, to_path)
-
-
 @app.put("/astsearch_manual", summary="手動再測定モード", tags=["command"], status_code=200)
 def run_astsearch_manual(pj: int = -1):
     """
