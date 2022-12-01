@@ -81,9 +81,6 @@ def get_unknown_disp(pj: int = -1):
     with disp_path.open() as f:
         result = f.read()
 
-    if result == "":
-        raise HTTPException(status_code=404)
-
     result = split_list(result.split(), 4)
 
     return {"result": result}
@@ -115,9 +112,6 @@ def get_karifugo_disp(pj: int = -1):
     with disp_path.open() as f:
         result = f.read()
 
-    if result == "":
-        raise HTTPException(status_code=404)
-
     result = split_list(result.split(), 4)
 
     return {"result": result}
@@ -132,9 +126,6 @@ def get_numbered_disp(pj: int = -1):
 
     with disp_path.open() as f:
         result = f.read()
-
-    if result == "":
-        raise HTTPException(status_code=404)
 
     result = split_list(result.split(), 4)
 
@@ -862,9 +853,6 @@ def run_redisp(pj: int = -1):
 
     with redisp_path.open() as f:
         result = f.read()
-
-    if result == "":
-        raise HTTPException(status_code=404)
 
     result = split_list(result.split(), 4)
 
