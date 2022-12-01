@@ -600,42 +600,6 @@ def run_memo_manual(output_list: list, pj: int = -1):
     return {"memo_manual.txt": result}
 
 
-@app.put("/memo2", summary="memo2を書き込み", tags=["files"])
-def write_memo2(text: str, pj: int = -1):
-    # fmt: off
-    """
-    textの文字列をmemo2.txtに書き込みます。  
-    memo2.txtの内容を返却します。
-    """ # noqa
-    # fmt: on
-
-    text_path = pj_path(pj) / "memo2.txt"
-
-    with text_path.open(mode="w") as f:
-        f.write(text)
-
-    with text_path.open(mode="r") as f:
-        result = f.read()
-
-    return {"memo2.txt": result}
-
-
-@app.get("/memo2", summary="memo2.txtを取得", tags=["files"])
-def get_memo2(pj: int = -1):
-    memo_path = pj_path(pj) / "memo2.txt"
-
-    if not memo_path.is_file():
-        raise HTTPException(status_code=404)
-
-    with memo_path.open() as f:
-        result = f.read()
-
-    if result == "":
-        raise HTTPException(status_code=404)
-
-    return {"memo2": result}
-
-
 @app.put(
     "/manual_name_modify_list",
     summary="manual_name_modify_list.txtを書き込み",
@@ -657,26 +621,6 @@ def write_modify_list(modifiedList: list, pj: int = -1):
 
     with text_path.open(mode="w") as f:
         f.write(text)
-
-
-@app.put("/listb3", summary="listb3を書き込み", tags=["files"])
-def write_listb3(text: str, pj: int = -1):
-    # fmt: off
-    """
-    textの文字列をlistb3.txtに書き込みます。  
-    listb3の内容を返却します。
-    """ # noqa
-    # fmt: on
-
-    text_path = pj_path(pj) / "listb3.txt"
-
-    with text_path.open(mode="w") as f:
-        f.write(text)
-
-    with text_path.open(mode="r") as f:
-        result = f.read()
-
-    return {"listb3.txt": result}
 
 
 @app.put("/preprocess", summary="最新のMPCデータを取得", tags=["command"], status_code=200)
@@ -702,50 +646,11 @@ def run_startsearch2R(binning: int = 2, pj: int = -1, sn: int = 2000):
     errorHandling(result.returncode)
 
 
-@app.put("/fits2png", summary="画像変換", tags=["command"], status_code=200)
-def run_fits2png(pj: int = -1):
-    os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["fits2png"])
-
-
-@app.put("/findsource", summary="光源検出", tags=["command"], status_code=200)
-def run_findsource(pj: int = -1):
-
-    os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["findsource"])
-
-
-"""
-prempsearchCを25行目で分割し、それぞれ別のAPIで動作させます。
-連続して実行するとサーバーから情報を取得できないことがあるためです。
-K.S. 2022/4/28 prempsearchCスクリプトを明示的に2つに分割
-"""
-# P_C_SPLIT_LINE = 41
-
-
 @app.put(
     "/prempsearchC-before", summary="精密軌道取得 前処理", tags=["command"], status_code=200
 )
 def run_prempsearchC_before(pj: int = -1):
-    """
-    prempsearchCを編集した場合、動かなくなります。
-    K.S. 2022/4/28 変更
-
-    premp = PROGRAM_PATH / "prempsearchC"
-    script = ""
-
-    # prempsearchCの<P_C_SPLIT_LINE>行より上を実行
-    with premp.open(mode="r") as f:
-
-        for i in range(P_C_SPLIT_LINE):
-            script = script + f.readline()
-
-    script = script + "\necho 前処理が完了"
-
-    os.chdir(pj_path(pj).as_posix())
-    subprocess.run([script], shell=True)
-    """
-
+    
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["prempsearchC-before"], shell=True)
     errorHandling(result.returncode)
@@ -753,32 +658,6 @@ def run_prempsearchC_before(pj: int = -1):
 
 @app.put("/prempsearchC-after", summary="精密軌道取得 後処理", tags=["command"], status_code=200)
 def run_prempsearchC_after(pj: int = -1):
-    """
-    prempsearchCを編集した場合、動かなくなります。
-    K.S. 2022/4/28 変更
-
-    premp = PROGRAM_PATH / "prempsearchC"
-    script = "#!/bin/bash\n"
-    count = 0
-
-    # prempsearchCの<P_C_SPLIT_LINE>行より下を実行
-    with premp.open(mode="r") as f:
-        while True:
-            count = count + 1
-            data = f.readline()
-
-            if count > P_C_SPLIT_LINE:
-
-                if data == "":
-                    break
-                else:
-                    script = script + data
-
-    script = script + "\necho 後処理が完了"
-
-    os.chdir(pj_path(pj).as_posix())
-    subprocess.run([script], shell=True)
-    """
 
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["prempsearchC-after"], shell=True)
@@ -803,19 +682,6 @@ def run_getMPCORB_and_mpc2edb(pj: int = -1):
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["getMPCORB_and_mpc2edb_for_button"])
     errorHandling(result.returncode)
-
-
-@app.put("/prempedit", summary="MPCフォーマットに再整形", tags=["command"], status_code=200)
-def run_prempedit(pj: int = -1):
-    """"""
-    os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["prempedit"])
-
-
-@app.put("/prempedit3", summary="出力ファイル整形", tags=["command"], status_code=200)
-def run_prempedit3(num: int, pj: int = -1):
-    os.chdir(pj_path(pj).as_posix())
-    subprocess.run(["prempedit3.py", str(num)])
 
 
 @app.put("/redisp", summary="再描画による確認作業", tags=["command"])
@@ -861,7 +727,7 @@ def run_redisp(pj: int = -1):
 
 @app.put(
     "/AstsearchR_between_COIAS_and_ReCOIAS",
-    summary="prempedit, prempedit3, redispを一つにしたもの",
+    summary="探索モード後に走り自動検出天体の番号の付け替えを行う",
     tags=["command"],
 )
 def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
@@ -920,38 +786,6 @@ def run_AstsearchR_after_manual(pj: int = -1):
         raise HTTPException(status_code=404)
 
     return {"reredisp": result}
-
-
-@app.put("/astsearch_manual", summary="手動再測定モード", tags=["command"], status_code=200)
-def run_astsearch_manual(pj: int = -1):
-    """
-    4行目を飛ばしてastsearch_manualを実行
-    """
-
-    astsearch = PROGRAM_PATH / "src8_astsearch_manual/astsearch_manual"
-    script = ""
-    count = 1
-
-    with astsearch.open(mode="r") as f:
-        while True:
-
-            data = f.readline()
-
-            if not count == 4:
-                script = script + data
-            else:
-                print("Skip loading : " + data)
-
-            if data == "":
-                break
-
-            count += 1
-
-    script = script + "\necho astsearch_manualが完了"
-
-    os.chdir(pj_path(pj).as_posix())
-    result = subprocess.run([script], shell=True)
-    errorHandling(result.returncode)
 
 
 @app.get("/final_all", summary="final_allを取得", tags=["files"])
