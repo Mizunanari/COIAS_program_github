@@ -32,6 +32,7 @@ origins = [
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:3001",
+    "http://127.0.0.1:3000",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -650,7 +651,7 @@ def run_startsearch2R(binning: int = 2, pj: int = -1, sn: int = 2000):
     "/prempsearchC-before", summary="精密軌道取得 前処理", tags=["command"], status_code=200
 )
 def run_prempsearchC_before(pj: int = -1):
-    
+
     os.chdir(pj_path(pj).as_posix())
     result = subprocess.run(["prempsearchC-before"], shell=True)
     errorHandling(result.returncode)
@@ -804,24 +805,25 @@ def get_finalall(pj: int = -1):
 
     return {"finalall": result}
 
+
 @app.get("/progress", summary="progress.txtに記載の進捗率などの情報を取得", tags=["files"])
 def get_progress(pj: int = -1):
     progress_path = pj_path(pj) / "progress.txt"
 
     try:
-        f = open(progress_path,"r")
+        f = open(progress_path, "r")
         line = f.readline()
         f.close()
-        
+
         contents = line.split()
         query = contents[0]
-        progress = str( int((int(contents[1])/int(contents[2]))*100.0) ) + "%"
+        progress = str(int((int(contents[1]) / int(contents[2])) * 100.0)) + "%"
 
-        result = {"query":query, "progress":progress}
+        result = {"query": query, "progress": progress}
     except FileNotFoundError:
-        result = {"query":"initial", "progress":"0%"}
+        result = {"query": "initial", "progress": "0%"}
     except Exception:
-        result = {"query":"N/A", "progress":"N/A"}
+        result = {"query": "N/A", "progress": "N/A"}
     finally:
         return {"result": result}
 
