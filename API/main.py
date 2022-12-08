@@ -864,9 +864,12 @@ def get_time_list(pj: int = -1):
         raise HTTPException(status_code=404)
 
     with time_list_path.open() as f:
-        result = f.read()
+        result = f.readlines()
 
-    return {"result": result.split("\n")}
+    for i in range(len(result)):
+        result[i] = result[i].rstrip("\n")
+
+    return {"result": result}
 
 
 def split_list(list, n):
