@@ -769,6 +769,18 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
 
     return {"send_mpc": result}
 
+@app.put("/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["command"])
+def get_mpc(pj: int = -1):
+    send_path = pj_path(pj) / "send_mpc.txt"
+    result = ""
+
+    with send_path.open(mode="r") as f:
+        result = f.read()
+
+    if not send_path.is_file():
+        raise HTTPException(status_code=404)
+
+    return {"send_mpc": result}
 
 @app.put("/AstsearchR_after_manual", summary="手動測定：再描画による確認作業", tags=["command"])
 def run_AstsearchR_after_manual(pj: int = -1):
@@ -787,6 +799,22 @@ def run_AstsearchR_after_manual(pj: int = -1):
         raise HTTPException(status_code=404)
 
     return {"reredisp": result}
+
+
+@app.get("/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["command"])
+def get_finaldisp(pj: int = -1):
+    final_disp_path = pj_path(pj) / "final_disp.txt"
+
+    if not final_disp_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with final_disp_path.open() as f:
+        result = f.read()
+
+    result = split_list(result.split(), 4)
+
+    return {"result": result}
+
 
 
 @app.get("/final_all", summary="final_allを取得", tags=["files"])
