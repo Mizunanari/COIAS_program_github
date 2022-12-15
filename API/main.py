@@ -856,6 +856,22 @@ def get_progress(pj: int = -1):
         return {"result": result}
 
 
+@app.get("/time_list", summary="画像の時刻リストが記載されたformatted_time_list.txtの内容を配列で取得", tags=["files"])
+def get_time_list(pj: int = -1):
+    time_list_path = pj_path(pj) / "formatted_time_list.txt"
+
+    if not time_list_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with time_list_path.open() as f:
+        result = f.readlines()
+
+    for i in range(len(result)):
+        result[i] = result[i].rstrip("\n")
+
+    return {"result": result}
+
+
 def split_list(list, n):
     """
     リストをサブリストに分割する
