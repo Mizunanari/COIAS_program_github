@@ -887,6 +887,72 @@ def get_predicted_disp(pj: int = -1):
     return {"result": result}
 
 
+@app.get("/manual_delete_list", summary="manual_delete_list.txtを取得", tags=["files"])
+def get_manual_delete_list(pj: int = -1):
+    # fmt: off
+    """
+    manual_delete_list.txtを取得します。
+
+    __body__
+
+    ```JSON
+    [
+        ["H000005", "0"],
+        ["H000005", "3"],
+        ["H000012", "3"],
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+
+    manual_delete_path = pj_path(pj) / "manual_delete_list.txt"
+
+    if not manual_delete_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with manual_delete_path.open() as f:
+        result = f.read()
+
+    result = split_list(result.split(), 2)
+
+    return {"result": result}
+
+
+@app.put("/manual_delete_list", summary="manual_delete_list.txtの出力", tags=["command"])
+def run_manual_delete_list(output_list: list, pj: int = -1):
+    """
+    manual_delete_list.txtへ出力
+    """
+
+    # fmt: off
+    """
+    bodyの配列からmanual_delete_list.txtを出力します。
+
+    __body__
+
+    ```JSON
+    [
+        "H000005 0",
+        "H000005 3",
+        "H000012 3",
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+
+    result = ""
+    manual_delete_path = pj_path(pj) / "memo_manual.txt"
+
+    with manual_delete_path.open(mode="w") as f:
+        for line in output_list:
+            f.write(line + "\n")
+
+    with manual_delete_path.open(mode="r") as f:
+        result = f.read()
+
+    return {"manual_delete_list.txt": result}
+
+
 def split_list(list, n):
     """
     リストをサブリストに分割する
