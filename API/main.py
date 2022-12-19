@@ -872,6 +872,21 @@ def get_time_list(pj: int = -1):
     return {"result": result}
 
 
+@app.get("/predicted_disp", summary="直近の測定データから予測された天体の位置を記載したpredicted_disp.txtを取得する", tags=["command"])
+def get_predicted_disp(pj: int = -1):
+    predicted_disp_path = pj_path(pj) / "predicted_disp.txt"
+
+    if not predicted_disp_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with predicted_disp_path.open() as f:
+        result = f.read()
+
+    result = split_list(result.split(), 5)
+
+    return {"result": result}
+
+
 def split_list(list, n):
     """
     リストをサブリストに分割する
