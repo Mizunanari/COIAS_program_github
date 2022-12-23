@@ -916,6 +916,37 @@ def get_AstMPC_refreshed_time(pj: int = -1):
         modified_unix_time = os.path.getmtime(AstMPC_path)
         dt = datetime.fromtimestamp(modified_unix_time)
         result = dt.strftime("最終更新: %Y年%m月%d日%H時")
+    
+    return {"result": result}
+
+
+@app.get("/manual_delete_list", summary="manual_delete_list.txtを取得", tags=["files"])
+def get_manual_delete_list(pj: int = -1):
+    # fmt: off
+    """
+    manual_delete_list.txtを取得します。
+
+    __body__
+
+    ```JSON
+    [
+        ["H000005", "0"],
+        ["H000005", "3"],
+        ["H000012", "3"],
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+
+    manual_delete_path = pj_path(pj) / "manual_delete_list.txt"
+
+    if not manual_delete_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with manual_delete_path.open() as f:
+        result = f.read()
+
+    result = split_list(result.split(), 2)
 
     return {"result": result}
 
