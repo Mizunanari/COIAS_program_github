@@ -110,8 +110,6 @@
 
 ### `make_asteroid_name_list_in_the_field.py`
 
-`
-
 - 報告が不要な明るい小惑星を除外するためのリスト、および視野内の既知天体の名前のリストを作成する
 - 実行内容
   1. `bright_asteroid_raw_names_in_the_field.txt`を整形して天体名を取り出す
