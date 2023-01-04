@@ -32,6 +32,13 @@ condaのパッケージを保管
 __findOrb__  
 天体処理に関するCプログラム群
 
+**src[0-9]\_.\***
+バックエンドのコア部分。[解説：docs/core-program.md](docs/core-program.md)
+
+## 環境構築
+
+[docs/Docker手動環境構築手順.md](docs/Docker手動環境構築手順.md)
+
 ## コードフォーマッタとlint
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
