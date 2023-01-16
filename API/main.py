@@ -79,24 +79,26 @@ manager = ConnectionManager()
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
     await manager.connect(websocket)
-    progress_path = pj_path(-1) / "progress.txt"
-
+    # TODO : fileがまだ作られていない時、接続してやめてが繰り返される
     try:
+        project_path = pj_path(-1, True)
         while True:
-            f = open(progress_path, "r")
-            line = f.readline()
-            f.close()
+            if project_path != "":
+                progress_path = project_path / "progress.txt"
+                f = open(progress_path, "r")
+                line = f.readline()
+                f.close()
 
-            contents = line.split()
-            progress = str(int((int(contents[1]) / int(contents[2])) * 100.0)) + "%"
+                contents = line.split()
+                progress = str(int((int(contents[1]) / int(contents[2])) * 100.0)) + "%"
 
-            # await manager.send_personal_message(f"You wrote: {data}", websocket)
-            await manager.send_personal_message({'query': contents[0], 'progress': progress}, websocket)
+                # await manager.send_personal_message(f"You wrote: {data}", websocket)
+                await manager.send_personal_message({'query': contents[0], 'progress': progress}, websocket)
             await asyncio.sleep(1)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception as e:
-        print(e)
+        print(e, e.args)
 
 
 @app.get("/", summary="ファイルアップロード確認用", tags=["test"])
@@ -940,7 +942,7 @@ def split_list(list, n):
         yield list[idx : idx + n]
 
 
-def pj_path(pj):
+def pj_path(pj, is_websocket = False):
 
     log_path = FILES_PATH / "log"
 
@@ -957,6 +959,8 @@ def pj_path(pj):
 
         file_name = log["file_list"][pj]
         path = FILES_PATH / str(file_name)
+    elif is_websocket:
+        pass
     else:
         raise HTTPException(
             404, detail={"place": "tmp_files", "reason": "log fileがありません"}
