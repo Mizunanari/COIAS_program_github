@@ -941,7 +941,7 @@ def split_list(list, n):
         yield list[idx : idx + n]
 
 
-def pj_path(pj, is_websocket = False):
+def pj_path(pj, is_websocket=False):
 
     log_path = FILES_PATH / "log"
 
@@ -959,7 +959,7 @@ def pj_path(pj, is_websocket = False):
         file_name = log["file_list"][pj]
         path = FILES_PATH / str(file_name)
     elif is_websocket:
-        pass
+        path = FILES_PATH / ""
     else:
         raise HTTPException(
             404, detail={"place": "tmp_files", "reason": "log fileがありません"}
