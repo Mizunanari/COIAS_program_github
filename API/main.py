@@ -192,7 +192,7 @@ def get_FITS_SIZE(pj: int = -1):
     return {"result": FITSSIZES}
 
 
-@app.post("/uploadfiles/", summary="fileアップロード", tags=["files"])
+@app.post("/uploadfiles", summary="fileアップロード", tags=["files"])
 async def create_upload_files(files: list[UploadFile]):
     """
     複数のファイルをアップロードする場合はこちらのページを使用すると良い
