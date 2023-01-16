@@ -81,10 +81,9 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     await manager.connect(websocket)
     # TODO : fileがまだ作られていない時、接続してやめてが繰り返される
     try:
-        project_path = pj_path(-1, True)
         while True:
-            if project_path != "":
-                progress_path = project_path / "progress.txt"
+            progress_path = pj_path(-1, True) / "progress.txt"
+            if progress_path.is_file():
                 f = open(progress_path, "r")
                 line = f.readline()
                 f.close()
