@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from astropy.io import fits
 import asyncio
 from PIL import Image
+import print_progress
 
 
 COIAS_DES = 'coiasフロントアプリからアクセスされるAPIです。\
@@ -93,6 +94,9 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 
                 # await manager.send_personal_message(f"You wrote: {data}", websocket)
                 await manager.send_personal_message({'query': contents[0], 'progress': progress}, websocket)
+
+                if progress == "100%":
+                    print_progress.print_progress(nTotalCheckPoints=1, currentCheckPoint=0, currentButtonName="ProcessDone")
             await asyncio.sleep(1)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
