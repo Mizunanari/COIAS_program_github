@@ -33,7 +33,7 @@ from astropy.io import fits
 from astropy.time import Time
 import traceback
 import print_detailed_log
-from def_coias_data_path import *
+import PARAM
 
 try:
     #---variables--------------------------------
@@ -74,7 +74,7 @@ try:
 
     #---if directory ~/.coias/orbit_data/yyyy_mm_dd does not exist-
     #---we produce it----------------------------------------------
-    dirName = coiasDataPath + "/orbit_data/" + yyyy_mm_dd
+    dirName = PARAM.COIAS_DATA_PATH + "/orbit_data/" + yyyy_mm_dd
     if not os.path.isdir(dirName):
         os.mkdir(dirName)
     logFileName = dirName + "/log.txt"
@@ -96,8 +96,8 @@ try:
     filesInOrbitDataDir = glob.glob(dirName + "/*")
     for fileName in filesInOrbitDataDir:
         if os.path.isdir(fileName):
-            if (not os.path.isfile(fileName+"/ra_dec_jd_time.txt")) or (not os.path.isfile(fileName+"/numbered_new2B.txt")) or (not os.path.isfile(fileName+"/karifugo_new2B.txt")) or (not os.path.isfile(fileName+"/search_astB.txt")) or (not os.path.isfile(fileName+"/bright_asteroid_MPC_names_in_the_field.txt")) or (not os.path.isfile(fileName+"/name_conversion_list_in_the_field.txt")):
-                print("The directory "+fileName+" does not have ra_dec_jd_time.txt, numbered_new2B.txt, karifugo_new2B.txt, search_astB.txt, bright_asteroid_MPC_names_in_the_field.txt, or name_conversion_list_in_the_field.txt")
+            if (not os.path.isfile(fileName+"/ra_dec_jd_time.txt")) or (not os.path.isfile(fileName+"/numbered_new2B.txt")) or (not os.path.isfile(fileName+"/karifugo_new2B.txt")) or (not os.path.isfile(fileName+"/search_astB.txt")) or (not os.path.isfile(fileName+"/bright_asteroid_MPC_names_in_the_field.txt")):
+                print("The directory "+fileName+" does not have ra_dec_jd_time.txt, numbered_new2B.txt, karifugo_new2B.txt, search_astB.txt, or bright_asteroid_MPC_names_in_the_field.txt")
                 print("Remove the directory.")
                 shutil.rmtree(fileName)
             else:

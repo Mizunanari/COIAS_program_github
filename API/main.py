@@ -14,6 +14,7 @@ from astropy.io import fits
 import asyncio
 from PIL import Image
 import print_progress
+import PARAM
 
 
 COIAS_DES = 'coiasフロントアプリからアクセスされるAPIです。\
@@ -51,6 +52,7 @@ IMAGES_PATH = OPT_PATH / "tmp_images"
 FILES_PATH = OPT_PATH / "tmp_files"
 SUBARU_PATH = PROGRAM_PATH / "SubaruHSC"
 DOC_IMAGE_PATH = PROGRAM_PATH / "docs/image"
+COIAS_PARAM_PATH = pathlib.Path(PARAM.COIAS_DATA_PATH + "/param")
 
 # https://fastapi.tiangolo.com/ja/tutorial/static-files/
 app.mount("/static", StaticFiles(directory=DOC_IMAGE_PATH), name="icon")
@@ -816,7 +818,10 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
 
     return {"send_mpc": result}
 
-@app.put("/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["command"])
+
+@app.put(
+    "/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["command"]
+)
 def get_mpc(pj: int = -1):
     send_path = pj_path(pj) / "send_mpc.txt"
     result = ""
@@ -828,6 +833,7 @@ def get_mpc(pj: int = -1):
         raise HTTPException(status_code=404)
 
     return {"send_mpc": result}
+
 
 @app.put("/AstsearchR_after_manual", summary="手動測定：再描画による確認作業", tags=["command"])
 def run_AstsearchR_after_manual(pj: int = -1):
@@ -848,7 +854,9 @@ def run_AstsearchR_after_manual(pj: int = -1):
     return {"reredisp": result}
 
 
-@app.get("/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["command"])
+@app.get(
+    "/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["command"]
+)
 def get_finaldisp(pj: int = -1):
     final_disp_path = pj_path(pj) / "final_disp.txt"
 
@@ -861,7 +869,6 @@ def get_finaldisp(pj: int = -1):
     result = split_list(result.split(), 4)
 
     return {"result": result}
-
 
 
 @app.get("/final_all", summary="final_allを取得", tags=["files"])
@@ -903,7 +910,11 @@ def get_progress(pj: int = -1):
         return {"result": result}
 
 
-@app.get("/time_list", summary="画像の時刻リストが記載されたformatted_time_list.txtの内容を配列で取得", tags=["files"])
+@app.get(
+    "/time_list",
+    summary="画像の時刻リストが記載されたformatted_time_list.txtの内容を配列で取得",
+    tags=["files"],
+)
 def get_time_list(pj: int = -1):
     time_list_path = pj_path(pj) / "formatted_time_list.txt"
 
@@ -919,7 +930,11 @@ def get_time_list(pj: int = -1):
     return {"result": result}
 
 
-@app.get("/predicted_disp", summary="直近の測定データから予測された天体の位置を記載したpredicted_disp.txtを取得する", tags=["command"])
+@app.get(
+    "/predicted_disp",
+    summary="直近の測定データから予測された天体の位置を記載したpredicted_disp.txtを取得する",
+    tags=["command"],
+)
 def get_predicted_disp(pj: int = -1):
     predicted_disp_path = pj_path(pj) / "predicted_disp.txt"
 
@@ -932,6 +947,89 @@ def get_predicted_disp(pj: int = -1):
     result = split_list(result.split(), 5)
 
     return {"result": result}
+
+
+@app.get(
+    "/AstMPC_refreshed_time",
+    summary="小惑星軌道データが最後にダウンロードされAstMPC.edbが更新された日時を取得する",
+    tags=["command"],
+)
+def get_AstMPC_refreshed_time(pj: int = -1):
+    AstMPC_path = COIAS_PARAM_PATH / "AstMPC.edb"
+
+    if not AstMPC_path.is_file():
+        result = "小惑星軌道データが存在しません.「小惑星データ更新」ボタンを押して下さい."
+    else:
+        modified_unix_time = os.path.getmtime(AstMPC_path)
+        dt = datetime.fromtimestamp(modified_unix_time)
+        result = dt.strftime("最終更新: %Y年%m月%d日%H時")
+    
+    return {"result": result}
+
+
+@app.get("/manual_delete_list", summary="manual_delete_list.txtを取得", tags=["files"])
+def get_manual_delete_list(pj: int = -1):
+    # fmt: off
+    """
+    manual_delete_list.txtを取得します。
+
+    __body__
+
+    ```JSON
+    [
+        ["H000005", "0"],
+        ["H000005", "3"],
+        ["H000012", "3"],
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+
+    manual_delete_path = pj_path(pj) / "manual_delete_list.txt"
+
+    if not manual_delete_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with manual_delete_path.open() as f:
+        result = f.read()
+
+    result = split_list(result.split(), 2)
+
+    return {"result": result}
+
+
+@app.put("/manual_delete_list", summary="manual_delete_list.txtの出力", tags=["command"])
+def run_manual_delete_list(output_list: list, pj: int = -1):
+    """
+    manual_delete_list.txtへ出力
+    """
+
+    # fmt: off
+    """
+    bodyの配列からmanual_delete_list.txtを出力します。
+
+    __body__
+
+    ```JSON
+    [
+        "H000005 0",
+        "H000005 3",
+        "H000012 3",
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+    result = ""
+    manual_delete_path = pj_path(pj) / "manual_delete_list.txt"
+
+    with manual_delete_path.open(mode="w") as f:
+        for line in output_list:
+            f.write(line + "\n")
+
+    with manual_delete_path.open(mode="r") as f:
+        result = f.read()
+
+    return {"manual_delete_list.txt": result}
 
 
 def split_list(list, n):
