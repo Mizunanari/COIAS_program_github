@@ -5,12 +5,15 @@ import pathlib
 import json
 from datetime import datetime
 import traceback
-from fastapi import FastAPI, HTTPException, UploadFile
+from typing import List
+from fastapi import FastAPI, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from astropy.io import fits
+import asyncio
 from PIL import Image
+import print_progress
 import PARAM
 
 
@@ -56,6 +59,51 @@ app.mount("/static", StaticFiles(directory=DOC_IMAGE_PATH), name="icon")
 
 # ディレクトリがなければつくる
 FILES_PATH.mkdir(exist_ok=True)
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message: json, websocket: WebSocket):
+        await websocket.send_json(message)
+
+
+manager = ConnectionManager()
+
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(websocket)
+    # TODO : fileがまだ作られていない時、接続してやめてが繰り返される
+    try:
+        while True:
+            progress_path = pj_path(-1, True) / "progress.txt"
+            if progress_path.is_file():
+                f = open(progress_path, "r")
+                line = f.readline()
+                f.close()
+
+                contents = line.split()
+                progress = str(int((int(contents[1]) / int(contents[2])) * 100.0)) + "%"
+
+                # await manager.send_personal_message(f"You wrote: {data}", websocket)
+                await manager.send_personal_message({'query': contents[0], 'progress': progress}, websocket)
+
+                if progress == "100%":
+                    print_progress.print_progress(nTotalCheckPoints=1, currentCheckPoint=0, currentButtonName="ProcessDone")
+            await asyncio.sleep(1)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        print(e, e.args)
 
 
 @app.get("/", summary="ファイルアップロード確認用", tags=["test"])
@@ -150,7 +198,7 @@ def get_FITS_SIZE(pj: int = -1):
     return {"result": FITSSIZES}
 
 
-@app.post("/uploadfiles/", summary="fileアップロード", tags=["files"])
+@app.post("/uploadfiles", summary="fileアップロード", tags=["files"])
 async def create_upload_files(files: list[UploadFile]):
     """
     複数のファイルをアップロードする場合はこちらのページを使用すると良い
@@ -202,7 +250,6 @@ async def create_upload_files(files: list[UploadFile]):
 
     # fileを保存
     for file in files:
-
         tmp_path = current_project_folder_path / file.filename
 
         try:
@@ -996,7 +1043,7 @@ def split_list(list, n):
         yield list[idx : idx + n]
 
 
-def pj_path(pj):
+def pj_path(pj, is_websocket=False):
 
     log_path = FILES_PATH / "log"
 
@@ -1013,6 +1060,8 @@ def pj_path(pj):
 
         file_name = log["file_list"][pj]
         path = FILES_PATH / str(file_name)
+    elif is_websocket:
+        path = FILES_PATH / ""
     else:
         raise HTTPException(
             404, detail={"place": "tmp_files", "reason": "log fileがありません"}
