@@ -81,6 +81,7 @@ manager = ConnectionManager()
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    os.chdir(pj_path(-1, True).as_posix())
     await manager.connect(websocket)
     # TODO : fileがまだ作られていない時、接続してやめてが繰り返される
     try:
@@ -95,10 +96,16 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                 progress = str(int((int(contents[1]) / int(contents[2])) * 100.0)) + "%"
 
                 # await manager.send_personal_message(f"You wrote: {data}", websocket)
-                await manager.send_personal_message({'query': contents[0], 'progress': progress}, websocket)
+                await manager.send_personal_message(
+                    {"query": contents[0], "progress": progress}, websocket
+                )
 
                 if progress == "100%":
-                    print_progress.print_progress(nTotalCheckPoints=1, currentCheckPoint=0, currentButtonName="ProcessDone")
+                    print_progress.print_progress(
+                        nTotalCheckPoints=1,
+                        currentCheckPoint=0,
+                        currentButtonName="ProcessDone",
+                    )
             await asyncio.sleep(1)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -963,7 +970,7 @@ def get_AstMPC_refreshed_time(pj: int = -1):
         modified_unix_time = os.path.getmtime(AstMPC_path)
         dt = datetime.fromtimestamp(modified_unix_time)
         result = dt.strftime("最終更新: %Y年%m月%d日%H時")
-    
+
     return {"result": result}
 
 
