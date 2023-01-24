@@ -186,7 +186,7 @@ dependencies:
   - typing_extensions=4.1.1
   - tzdata=2022a
   - urllib3=1.26.9
-  - uvicorn=0.16.0
+  - uvicorn=0.20.0
   - webencodings=0.5.1
   - wheel=0.37.1
   - xz=5.2.5
@@ -197,4 +197,5 @@ dependencies:
   - zstd=1.4.9
   - pip:
     - julian==0.14
+    - websockets==10.4
 prefix: /root/miniconda3/envs/coias
