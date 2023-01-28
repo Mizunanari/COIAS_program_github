@@ -198,4 +198,5 @@ dependencies:
   - pip:
     - julian==0.14
     - websockets==10.4
+    - pymysql==1.0.2
 prefix: /root/miniconda3/envs/coias

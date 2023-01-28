@@ -15,6 +15,7 @@ import asyncio
 from PIL import Image
 import print_progress
 import PARAM
+import COIAS_MySQL
 
 
 COIAS_DES = 'coiasフロントアプリからアクセスされるAPIです。\
@@ -1037,6 +1038,187 @@ def run_manual_delete_list(output_list: list, pj: int = -1):
         result = f.read()
 
     return {"manual_delete_list.txt": result}
+
+
+@app.get(
+    "/tract_list",
+    summary="MySQLのCOIASデータベースに保存されている画像のtract一覧を取得する. 返り値はtractId(string)をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)をプロパティに持つ",
+    tags=["files"],
+)
+def get_tract_list():
+    try:
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        cursor.execute(
+            "SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=2"
+        )
+        queryResult = cursor.fetchall()
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        tmpResult = {}
+        for aQueryResult in queryResult:
+            tractId = aQueryResult["this_dir_name"]
+            if tractId in tmpResult:
+                nTotalImages = tmpResult[tractId]["n_total_images"]
+                nMeasuredImages = tmpResult[tractId]["n_measured_images"]
+            else:
+                nTotalImages = 0
+                nMeasuredImages = 0
+            nTotalImages += aQueryResult["n_total_images"]
+            nMeasuredImages += aQueryResult["n_measured_images"]
+            tmpResult[tractId] = {
+                "n_total_images": nTotalImages,
+                "n_measured_images": nMeasuredImages,
+            }
+
+        result = {}
+        for key in tmpResult.keys():
+            progress = (
+                tmpResult[key]["n_measured_images"] / tmpResult[key]["n_total_images"]
+            )
+            result[key] = {"progress": progress}
+
+    except Exception:
+        raise HTTPException(status_code=500)
+    else:
+        return {"result": result}
+
+
+@app.get(
+    "/patch_list",
+    summary="int型で与えられたtractIdをクエリパラメータとして受け取り, そのtract以下に存在する全てのpatchを検索する. 返り値は'[tract]-[patch],[patch]'の文字列をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)をプロパティに持つ",
+    tags=["files"],
+)
+def get_patch_list(tractId: int):
+    try:
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        cursor.execute(
+            f"SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=3 AND parent_dir_name='{tractId}'"
+        )
+        queryResult = cursor.fetchall()
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        tmpResult = {}
+        for aQueryResult in queryResult:
+            patchId = aQueryResult["this_dir_name"]
+            if patchId in tmpResult:
+                nTotalImages = tmpResult[patchId]["n_total_images"]
+                nMeasuredImages = tmpResult[patchId]["n_measured_images"]
+            else:
+                nTotalImages = 0
+                nMeasuredImages = 0
+            nTotalImages += aQueryResult["n_total_images"]
+            nMeasuredImages += aQueryResult["n_measured_images"]
+            tmpResult[patchId] = {
+                "n_total_images": nTotalImages,
+                "n_measured_images": nMeasuredImages,
+            }
+
+        result = {}
+        for key in tmpResult.keys():
+            progress = (
+                tmpResult[key]["n_measured_images"] / tmpResult[key]["n_total_images"]
+            )
+            result[key] = {"progress": progress}
+
+    except Exception:
+        raise HTTPException(status_code=500)
+    else:
+        return {"result": result}
+
+
+@app.get(
+    "/observe_date_list",
+    summary="'[tract]-[patch],[patch]'の文字列をクエリパラメータとして受け取り, その[tract]-[patch],[patch]以下に存在する全ての観測日を取得する. 返り値は'yyyy-mm-dd'の文字列をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)とそのディレクトリid dir_id(int)をプロパティに持つ",
+    tags=["files"],
+)
+def get_observe_date_list(patchId: str):
+    try:
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        cursor.execute(
+            f"SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=4 AND parent_dir_name='{patchId}'"
+        )
+        queryResult = cursor.fetchall()
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        result = {}
+        for aQueryResult in queryResult:
+            progress = (
+                aQueryResult["n_measured_images"] / aQueryResult["n_total_images"]
+            )
+            result[aQueryResult["this_dir_name"]] = {
+                "progress": progress,
+                "dir_id": aQueryResult["this_dir_id"],
+            }
+
+    except Exception:
+        raise HTTPException(status_code=500)
+    else:
+        return {"result": result}
+
+
+@app.get(
+    "/image_list",
+    summary="選択した画像を格納しているディレクトリ構造の末端のディレクトリid (int)をクエリパラメータとして受け取り, そのディレクトリ以下に存在する画像の一覧を取得する. 返り値は画像ファイル名をキーとするオブジェクトで, 各キーの値であるオブジェクトは自動測定済みであるか否かを示すisAutoMeasured(bool)と手動測定済みであるか否かを示すisManualMeasured(bool)をプロパティに持つ",
+    tags=["files"],
+)
+def get_image_list(dirId: int):
+    try:
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        cursor.execute(
+            f"SELECT image_id,image_name,is_auto_measured,is_manual_measured FROM image_info WHERE direct_parent_dir_id={dirId}"
+        )
+        queryResult = cursor.fetchall()
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        result = {}
+        for aQueryResult in queryResult:
+            result[aQueryResult["image_name"]] = {
+                "isAutoMeasured": (aQueryResult["is_auto_measured"] == 1),
+                "isManualMeasured": (aQueryResult["is_manual_measured"] == 1),
+            }
+
+    except Exception:
+        raise HTTPException(status_code=500)
+    else:
+        return {"result": result}
+
+
+@app.put(
+    "/put_image_list",
+    summary="解析したい画像ファイル名のリストをリクエストボディで受け取り, それら画像へのfull pathを作業ディレクトリのselected_warp_files.txtに書き出す",
+    tags=["files"],
+)
+def put_image_list(imageNameList: list[str], pj: int = -1):
+    try:
+        image_list_path = pj_path(pj) / "selected_warp_files.txt"
+
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        imageFullPathList = []
+        for imageName in imageNameList:
+            cursor.execute(
+                f"SELECT full_dir FROM image_info WHERE image_name='{imageName}'"
+            )
+            queryResult = cursor.fetchall()
+            if len(queryResult) == 0:
+                print(f"record for the file {imageName} is not found!")
+                raise FileNotFoundError
+            elif len(queryResult) >= 2:
+                print(
+                    f"something wrong! There are multiple records for the image {imageName}: N records = {len(queryResult)}"
+                )
+                raise Exception
+            else:
+                imageFullPath = queryResult[0]["full_dir"] + "/" + imageName + "\n"
+                imageFullPathList.append(imageFullPath)
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        with image_list_path.open(mode="w") as f:
+            f.writelines(imageFullPathList)
+
+    except FileNotFoundError:
+        raise HTTPException(status_code=404)
+    except Exception:
+        raise HTTPException(status_code=500)
 
 
 def split_list(list, n):
