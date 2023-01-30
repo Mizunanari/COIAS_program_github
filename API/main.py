@@ -207,7 +207,9 @@ def get_FITS_SIZE(pj: int = -1):
 
 
 @app.post("/uploadfiles", summary="fileアップロード", tags=["files"])
-async def create_upload_files(files: list[UploadFile]):
+async def create_upload_files(
+    files: list[UploadFile] = None, doUploadFiles: bool = False
+):
     """
     複数のファイルをアップロードする場合はこちらのページを使用すると良い
 
@@ -257,15 +259,16 @@ async def create_upload_files(files: list[UploadFile]):
     current_project_folder_path.mkdir()
 
     # fileを保存
-    for file in files:
-        tmp_path = current_project_folder_path / file.filename
+    if doUploadFiles:
+        for file in files:
+            tmp_path = current_project_folder_path / file.filename
 
-        try:
-            with tmp_path.open("wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
+            try:
+                with tmp_path.open("wb") as buffer:
+                    shutil.copyfileobj(file.file, buffer)
 
-        finally:
-            file.file.close()
+            finally:
+                file.file.close()
 
     # プロジェクトディレクトリの内容を取得
     files_dir = [fd.name for fd in FILES_PATH.iterdir() if fd.is_dir()]
@@ -1077,7 +1080,8 @@ def get_tract_list():
             )
             result[key] = {"progress": progress}
 
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=500)
     else:
         return {"result": result}
@@ -1120,7 +1124,8 @@ def get_patch_list(tractId: int):
             )
             result[key] = {"progress": progress}
 
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=500)
     else:
         return {"result": result}
@@ -1150,7 +1155,8 @@ def get_observe_date_list(patchId: str):
                 "dir_id": aQueryResult["this_dir_id"],
             }
 
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=500)
     else:
         return {"result": result}
@@ -1177,7 +1183,8 @@ def get_image_list(dirId: int):
                 "isManualMeasured": (aQueryResult["is_manual_measured"] == 1),
             }
 
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=500)
     else:
         return {"result": result}
@@ -1215,9 +1222,11 @@ def put_image_list(imageNameList: list[str], pj: int = -1):
         with image_list_path.open(mode="w") as f:
             f.writelines(imageFullPathList)
 
-    except FileNotFoundError:
+    except FileNotFoundError as e:
+        print(e)
         raise HTTPException(status_code=404)
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=500)
 
 
