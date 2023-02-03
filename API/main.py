@@ -5,6 +5,7 @@ import pathlib
 import json
 from datetime import datetime
 import traceback
+import itertools
 from typing import List
 from fastapi import FastAPI, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
@@ -1183,6 +1184,80 @@ def get_image_list(dirId: int):
                 "isManualMeasured": (aQueryResult["is_manual_measured"] == 1),
             }
 
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500)
+    else:
+        return {"result": result}
+
+
+@app.get(
+    "/suggested_images",
+    summary="画像をお勧め順に自動選択し、その画像のファイル名一覧([fileNames]), 赤経deg(ra)、赤緯deg(dec)、[tract]-[patch],[patch](tractPatch)、観測日(observeDate)をプロパティに持つオブジェクトを返す",
+    tags=["files"],
+)
+def get_suggested_images():
+    try:
+        # suggest condition 1: 黄道に近い領域1と2を先にお勧めして、黄道から遠い領域3は後回し
+        conditions1 = ["dec_lowest<30", "dec_lowest>30"]
+        # suggest condition 2: 年が最近のものほど優先
+        conditions2 = []
+        for year in range(2020, 2013, -1):
+            conditions2.append(f"this_dir_name LIKE '{year}-%'")
+        # suggest condition 3: 画像枚数が5枚のものを優先、次に4枚、その次にそれ以外
+        conditions3 = ["n_total_images=5", "n_total_images=4", "n_total_images>5"]
+
+        # ---get a directory for suggestion-----------------------------------
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        dirNotFound = True
+        for condition1, condition2, condition3 in itertools.product(
+            conditions1, conditions2, conditions3
+        ):
+            cursor.execute(
+                f"SELECT IF (ra_lowest<45, ra_lowest, ra_lowest-360) AS ra_reduced, ra_lowest, dec_lowest, this_dir_id, parent_dir_name, this_dir_name FROM dir_structure WHERE level=4 AND n_measured_images=0 AND {condition1} AND {condition2} AND {condition3} ORDER BY this_dir_name DESC, ra_reduced DESC LIMIT 1;"
+            )
+            dirStructureQueryResults = cursor.fetchall()
+            if len(dirStructureQueryResults) == 1:
+                dirNotFound = False
+                break
+
+        if dirNotFound:
+            raise FileNotFoundError("We cannot find any directory for suggestion")
+
+        queryResult = dirStructureQueryResults[0]
+        dirId = queryResult["this_dir_id"]
+        ra = queryResult["ra_lowest"]
+        dec = queryResult["dec_lowest"]
+        observeDate = queryResult["this_dir_name"]
+        tractPatch = queryResult["parent_dir_name"]
+        # ---------------------------------------------------------------------
+
+        # ---get image names in the suggested directory------------------------
+        cursor.execute(
+            f"SELECT image_name FROM image_info WHERE direct_parent_dir_id={dirId};"
+        )
+        imageInfoQueryResults = cursor.fetchall()
+        if len(imageInfoQueryResults) < 4:
+            raise Exception(
+                f"Something wrong. Image number in the selected directory is smaller than 4: NImages={len(imageInfoQueryResults)}"
+            )
+        fileNames = []
+        for aQueryResult in imageInfoQueryResults:
+            fileNames.append(aQueryResult["image_name"])
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+        # ----------------------------------------------------------------------
+
+        result = {
+            "fileNames": fileNames,
+            "ra": ra,
+            "dec": dec,
+            "tractPatch": tractPatch,
+            "observeDate": observeDate,
+        }
+
+    except FileNotFoundError as e:
+        print(e)
+        raise HTTPException(status_code=404)
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500)
