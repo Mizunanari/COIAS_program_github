@@ -1165,24 +1165,32 @@ def get_observe_date_list(patchId: str):
 
 @app.get(
     "/image_list",
-    summary="選択した画像を格納しているディレクトリ構造の末端のディレクトリid (int)をクエリパラメータとして受け取り, そのディレクトリ以下に存在する画像の一覧を取得する. 返り値は画像ファイル名をキーとするオブジェクトで, 各キーの値であるオブジェクトは自動測定済みであるか否かを示すisAutoMeasured(bool)と手動測定済みであるか否かを示すisManualMeasured(bool)をプロパティに持つ",
+    summary="選択した画像を格納しているディレクトリ構造の末端のディレクトリid (str, 複数可能・複数の時は-で区切られる)をクエリパラメータとして受け取り, そのディレクトリ以下に存在する画像の一覧を取得する. 返り値は画像ファイル名をキーとするオブジェクトで, 各キーの値であるオブジェクトは自動測定済みであるか否かを示すisAutoMeasured(bool)と手動測定済みであるか否かを示すisManualMeasured(bool)をプロパティに持つ",
     tags=["files"],
 )
-def get_image_list(dirId: int):
+def get_image_list(dirIdsStr: str):
     try:
-        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
-        cursor.execute(
-            f"SELECT image_id,image_name,is_auto_measured,is_manual_measured FROM image_info WHERE direct_parent_dir_id={dirId}"
-        )
-        queryResult = cursor.fetchall()
-        COIAS_MySQL.close_COIAS_database(connection, cursor)
+        dirIds = []
+        dirIdsSplitted = dirIdsStr.split("-")
+        for dirIdStr in dirIdsSplitted:
+            dirIds.append(int(dirIdStr))
 
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
         result = {}
-        for aQueryResult in queryResult:
-            result[aQueryResult["image_name"]] = {
-                "isAutoMeasured": (aQueryResult["is_auto_measured"] == 1),
-                "isManualMeasured": (aQueryResult["is_manual_measured"] == 1),
-            }
+
+        for dirId in dirIds:
+            cursor.execute(
+                f"SELECT image_id,image_name,is_auto_measured,is_manual_measured FROM image_info WHERE direct_parent_dir_id={dirId}"
+            )
+            queryResult = cursor.fetchall()
+
+            for aQueryResult in queryResult:
+                result[aQueryResult["image_name"]] = {
+                    "isAutoMeasured": (aQueryResult["is_auto_measured"] == 1),
+                    "isManualMeasured": (aQueryResult["is_manual_measured"] == 1),
+                }
+
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
 
     except Exception as e:
         print(e)
