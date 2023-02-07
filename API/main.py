@@ -1260,7 +1260,7 @@ def errorHandling(errorNumber: int):
         elif numString[-1] == "5":
             errorList.update(
                 {
-                    "reason": "予期せぬエラーが発生しました。数回やり直してもエラーが出る場合、開発者にlog.txtをメールで送信して下さい。ログをダウンロードボタンからlog.txtをダウンロードできます。"
+                    "reason": "予期せぬエラーが発生しました。数回やり直してもエラーが出る場合、開発者にlog.txtをメールで送信して下さい。「ログをダウンロード」ボタンからlog.txtをダウンロードできます。"
                 }
             )
         else:
