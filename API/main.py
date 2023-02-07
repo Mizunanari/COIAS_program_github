@@ -115,22 +115,6 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
         print(e, e.args)
 
 
-@app.get("/", summary="ファイルアップロード確認用", tags=["test"])
-async def main():
-    """
-    [localhost](http://localhost:8000/)
-    """
-    content = """
-<body>
-<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-</body>
-    """
-    return HTMLResponse(content=content)
-
-
 @app.get("/unknown_disp", summary="unknown_disp.txtを配列で取得", tags=["files"])
 def get_unknown_disp(pj: int = -1):
     disp_path = pj_path(pj) / "unknown_disp.txt"
@@ -190,21 +174,6 @@ def get_numbered_disp(pj: int = -1):
     result = split_list(result.split(), 4)
 
     return {"result": result}
-
-
-@app.get("/fits_size", summary="fitsファイルのサイズを取得", tags=["files"])
-def get_FITS_SIZE(pj: int = -1):
-    fits_path = pj_path(pj) / "warp01_bin.fits"
-
-    if not fits_path.is_file():
-        raise HTTPException(status_code=404)
-
-    FITSSIZES = (
-        fits.open(fits_path)[0].header["NAXIS1"],
-        fits.open(fits_path)[0].header["NAXIS2"],
-    )
-
-    return {"result": FITSSIZES}
 
 
 @app.post("/uploadfiles", summary="fileアップロード", tags=["files"])
@@ -281,125 +250,6 @@ async def create_upload_files(
     return {"tmp_files_projects": files_dir, "project_files": project_files, "log": log}
 
 
-@app.get("/project-list", summary="projectのリストを返却します", tags=["files"], status_code=200)
-def run_get_project_list():
-    # fmt:off
-    """
-    projectのリストを返却します。  
-    projectはファイルがアップロードされるたびに、作成されます。
-
-    __res__
-
-    ```
-    {
-        "tmp_files_projects": [
-            "1",
-            "2"
-        ],
-        "log": {
-            "file_list": [
-                1,
-                2
-            ],
-            "create_time": [
-                "2022-03-25 07:33:34.558611",
-                "2022-03-25 08:03:34.850662"
-            ],
-            "zip_upload": [
-                false,
-                false
-            ]
-        }
-    }
-    ```
-
-    tmp_files_projects  
-    実際にtmpフォルダーに配置されている、プロジェクトフォルダー。
-
-    log  
-    project作成時に更新される、プロジェクトの詳細情報。
-
-    """  # noqa
-    # fmt:on
-    log_path = FILES_PATH / "log"
-
-    # logファイルがあれば読み込み
-    if log_path.is_file():
-
-        with log_path.open(mode="r") as conf:
-            conf_json = conf.read()
-
-        if not conf_json == "":
-            log = json.loads(conf_json)
-
-    else:
-        raise HTTPException(status_code=404)
-
-    # プロジェクトディレクトリpathを作成
-    file_name = str(log["file_list"][-1])
-    current_project_folder_path = FILES_PATH / file_name
-
-    # プロジェクトディレクトリの内容を取得
-    files_dir = [fd.name for fd in FILES_PATH.iterdir() if fd.is_dir()]
-    project_files = [pf.name for pf in current_project_folder_path.iterdir()]
-
-    files_dir.sort(key=int)
-    project_files.sort()
-
-    return {"tmp_files_projects": files_dir, "log": log}
-
-
-@app.get("/project", summary="projectのフォルダ内容を返却します", tags=["files"])
-def run_get_project(pj: int = -1):
-    # fmt:off
-    """
-    projectのフォルダ内容を返却します。  
-
-    __res__
-
-    ```
-    {
-        "project_files": [
-            "1_disp-coias.png",
-            "1_disp-coias_nonmask.png",
-            "2_disp-coias.png",
-            "2_disp-coias_nonmask.png",
-                    ・
-                    ・
-                    ・
-        ]
-    }
-    ```
-
-
-    """  # noqa
-    # fmt:on
-
-    log_path = FILES_PATH / "log"
-
-    # logファイルがあれば読み込み
-    if log_path.is_file():
-
-        with log_path.open(mode="r") as conf:
-            conf_json = conf.read()
-
-        if not conf_json == "":
-            log = json.loads(conf_json)
-
-    else:
-        raise HTTPException(status_code=404)
-
-    # プロジェクトディレクトリを作成
-    file_name = str(log["file_list"][-1])
-    current_project_folder_path = FILES_PATH / file_name
-
-    # プロジェクトディレクトリの内容を取得
-    project_files = [pf.name for pf in current_project_folder_path.iterdir()]
-    project_files.sort()
-
-    return {"project_files": project_files}
-
-
 @app.delete("/deletefiles", summary="tmp_imageの中身を削除", tags=["files"], status_code=200)
 def run_deletefiles():
 
@@ -451,7 +301,7 @@ def run_copy(pj: int = -1):
 def run_memo(output_list: list, pj: int = -1):
     # fmt: off
     """
-    bodyの配列からmemo.txtを出力します。
+    フロントから渡されたbodyの配列からmemo.txtを出力します。
 
     __body__
 
@@ -495,7 +345,7 @@ def run_memo(output_list: list, pj: int = -1):
 def get_memo(pj: int = -1):
     # fmt: off
     """
-    memo.txtを出力します。
+    memo.txtの内容を取得してフロントに返却します。
 
     __body__
 
@@ -535,7 +385,7 @@ def get_memo(pj: int = -1):
 def get_memomanual(pj: int = -1):
     # fmt: off
     """
-    memo_manual.txtを出力します。
+    memo_manual.txtの内容を取得してフロントに返却します。
 
     __body__
 
@@ -563,13 +413,13 @@ def get_memomanual(pj: int = -1):
         raise HTTPException(status_code=404)
 
     with memo_path.open() as f:
-        result = f.read()
+        readResult = f.read()
 
-    if result == "":
+    if readResult == "":
         raise HTTPException(status_code=404)
 
     memo_manual = []
-    for line in result.split("\n"):
+    for line in readResult.split("\n"):
         splitedLine = line.split(" ")
         result = (
             splitedLine[0]
@@ -591,13 +441,9 @@ def get_memomanual(pj: int = -1):
 
 @app.put("/memo_manual", summary="手動測定の出力", tags=["command"])
 def run_memo_manual(output_list: list, pj: int = -1):
-    """
-    memo_manual.txtへ出力
-    """
-
     # fmt: off
     """
-    bodyの配列からmemo_manual.txtを出力します。
+    フロントから受け取ったbodyの配列からmemo_manual.txtを出力します。
 
     __body__
 
@@ -709,7 +555,10 @@ def run_startsearch2R(binning: int = 2, pj: int = -1, sn: int = 2000):
 
 
 @app.put(
-    "/prempsearchC-before", summary="精密軌道取得 前処理", tags=["command"], status_code=200
+    "/prempsearchC-before",
+    summary="精密軌道取得(確定番号付き天体)",
+    tags=["command"],
+    status_code=200,
 )
 def run_prempsearchC_before(pj: int = -1):
 
@@ -718,7 +567,9 @@ def run_prempsearchC_before(pj: int = -1):
     errorHandling(result.returncode)
 
 
-@app.put("/prempsearchC-after", summary="精密軌道取得 後処理", tags=["command"], status_code=200)
+@app.put(
+    "/prempsearchC-after", summary="精密軌道取得(仮符号天体)", tags=["command"], status_code=200
+)
 def run_prempsearchC_after(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
@@ -737,7 +588,10 @@ def run_astsearch_new(pj: int = -1, nd: int = 4, ar: int = 6):
 
 
 @app.put(
-    "/getMPCORB_and_mpc2edb", summary="出力ファイル整形", tags=["command"], status_code=200
+    "/getMPCORB_and_mpc2edb",
+    summary="小惑星の軌道情報をMPCから取得",
+    tags=["command"],
+    status_code=200,
 )
 def run_getMPCORB_and_mpc2edb(pj: int = -1):
 
@@ -746,10 +600,10 @@ def run_getMPCORB_and_mpc2edb(pj: int = -1):
     errorHandling(result.returncode)
 
 
-@app.put("/redisp", summary="再描画による確認作業", tags=["command"])
+@app.put("/redisp", summary="再描画による確認作業", tags=["files"])
 def run_redisp(pj: int = -1):
     """
-    redispが動作し、redisp.txtを配列で取得
+    redisp.txtの内容をを配列で取得しフロントに返却
 
     __res__
 
@@ -831,9 +685,7 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
     return {"send_mpc": result}
 
 
-@app.put(
-    "/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["command"]
-)
+@app.put("/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["files"])
 def get_mpc(pj: int = -1):
     send_path = pj_path(pj) / "send_mpc.txt"
     result = ""
@@ -867,7 +719,7 @@ def run_AstsearchR_after_manual(pj: int = -1):
 
 
 @app.get(
-    "/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["command"]
+    "/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["files"]
 )
 def get_finaldisp(pj: int = -1):
     final_disp_path = pj_path(pj) / "final_disp.txt"
@@ -900,28 +752,6 @@ def get_finalall(pj: int = -1):
     return {"finalall": result}
 
 
-@app.get("/progress", summary="progress.txtに記載の進捗率などの情報を取得", tags=["files"])
-def get_progress(pj: int = -1):
-    progress_path = pj_path(pj) / "progress.txt"
-
-    try:
-        f = open(progress_path, "r")
-        line = f.readline()
-        f.close()
-
-        contents = line.split()
-        query = contents[0]
-        progress = str(int((int(contents[1]) / int(contents[2])) * 100.0)) + "%"
-
-        result = {"query": query, "progress": progress}
-    except FileNotFoundError:
-        result = {"query": "initial", "progress": "0%"}
-    except Exception:
-        result = {"query": "N/A", "progress": "N/A"}
-    finally:
-        return {"result": result}
-
-
 @app.get(
     "/time_list",
     summary="画像の時刻リストが記載されたformatted_time_list.txtの内容を配列で取得",
@@ -945,7 +775,7 @@ def get_time_list(pj: int = -1):
 @app.get(
     "/predicted_disp",
     summary="直近の測定データから予測された天体の位置を記載したpredicted_disp.txtを取得する",
-    tags=["command"],
+    tags=["files"],
 )
 def get_predicted_disp(pj: int = -1):
     predicted_disp_path = pj_path(pj) / "predicted_disp.txt"
@@ -964,7 +794,7 @@ def get_predicted_disp(pj: int = -1):
 @app.get(
     "/AstMPC_refreshed_time",
     summary="小惑星軌道データが最後にダウンロードされAstMPC.edbが更新された日時を取得する",
-    tags=["command"],
+    tags=["files"],
 )
 def get_AstMPC_refreshed_time(pj: int = -1):
     AstMPC_path = COIAS_PARAM_PATH / "AstMPC.edb"
@@ -983,11 +813,11 @@ def get_AstMPC_refreshed_time(pj: int = -1):
 def get_manual_delete_list(pj: int = -1):
     # fmt: off
     """
-    manual_delete_list.txtを取得します。
+    manual_delete_list.txtの内容を取得しフロントに返却します。
 
     __body__
 
-    ```JSON
+    ```
     [
         ["H000005", "0"],
         ["H000005", "3"],
@@ -1010,19 +840,15 @@ def get_manual_delete_list(pj: int = -1):
     return {"result": result}
 
 
-@app.put("/manual_delete_list", summary="manual_delete_list.txtの出力", tags=["command"])
+@app.put("/manual_delete_list", summary="manual_delete_list.txtの出力", tags=["files"])
 def run_manual_delete_list(output_list: list, pj: int = -1):
-    """
-    manual_delete_list.txtへ出力
-    """
-
     # fmt: off
     """
-    bodyの配列からmanual_delete_list.txtを出力します。
+    フロントから受け取ったbodyの配列からmanual_delete_list.txtを出力します。
 
     __body__
 
-    ```JSON
+    ```
     [
         "H000005 0",
         "H000005 3",
@@ -1403,7 +1229,7 @@ def errorHandling(errorNumber: int):
     return errorList
 
 
-# Functions for converting fits coords between png and fits #
+# Functions for converting fits coords between png and fits #########
 def convertFits2PngCoords(fitsPosition):
     try:
         images_pj_path = pj_path(-1)
