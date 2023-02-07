@@ -15,6 +15,7 @@ from astropy.io import fits
 import asyncio
 from PIL import Image
 import print_progress
+import print_detailed_log
 import PARAM
 import COIAS_MySQL
 
@@ -875,8 +876,10 @@ def run_manual_delete_list(output_list: list, pj: int = -1):
     summary="MySQLのCOIASデータベースに保存されている画像のtract一覧を取得する. 返り値はtractId(string)をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)をプロパティに持つ",
     tags=["files"],
 )
-def get_tract_list():
+def get_tract_list(pj: int = -1):
     try:
+        os.chdir(pj_path(pj).as_posix())
+
         connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
         cursor.execute(
             "SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=2"
@@ -907,9 +910,14 @@ def get_tract_list():
             )
             result[key] = {"progress": progress}
 
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500)
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
     else:
         return {"result": result}
 
@@ -919,8 +927,10 @@ def get_tract_list():
     summary="int型で与えられたtractIdをクエリパラメータとして受け取り, そのtract以下に存在する全てのpatchを検索する. 返り値は'[tract]-[patch],[patch]'の文字列をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)をプロパティに持つ",
     tags=["files"],
 )
-def get_patch_list(tractId: int):
+def get_patch_list(tractId: int, pj: int = -1):
     try:
+        os.chdir(pj_path(pj).as_posix())
+
         connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
         cursor.execute(
             f"SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=3 AND parent_dir_name='{tractId}'"
@@ -951,9 +961,14 @@ def get_patch_list(tractId: int):
             )
             result[key] = {"progress": progress}
 
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500)
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
     else:
         return {"result": result}
 
@@ -963,8 +978,10 @@ def get_patch_list(tractId: int):
     summary="'[tract]-[patch],[patch]'の文字列をクエリパラメータとして受け取り, その[tract]-[patch],[patch]以下に存在する全ての観測日を取得する. 返り値は'yyyy-mm-dd'の文字列をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)とそのディレクトリid dir_id(int)をプロパティに持つ",
     tags=["files"],
 )
-def get_observe_date_list(patchId: str):
+def get_observe_date_list(patchId: str, pj: int = -1):
     try:
+        os.chdir(pj_path(pj).as_posix())
+
         connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
         cursor.execute(
             f"SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=4 AND parent_dir_name='{patchId}'"
@@ -982,9 +999,14 @@ def get_observe_date_list(patchId: str):
                 "dir_id": aQueryResult["this_dir_id"],
             }
 
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500)
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
     else:
         return {"result": result}
 
@@ -994,8 +1016,10 @@ def get_observe_date_list(patchId: str):
     summary="選択した画像を格納しているディレクトリ構造の末端のディレクトリid (str, 複数可能・複数の時は-で区切られる)をクエリパラメータとして受け取り, そのディレクトリ以下に存在する画像の一覧を取得する. 返り値は画像ファイル名をキーとするオブジェクトで, 各キーの値であるオブジェクトは自動測定済みであるか否かを示すisAutoMeasured(bool)と手動測定済みであるか否かを示すisManualMeasured(bool)をプロパティに持つ",
     tags=["files"],
 )
-def get_image_list(dirIdsStr: str):
+def get_image_list(dirIdsStr: str, pj: int = -1):
     try:
+        os.chdir(pj_path(pj).as_posix())
+
         dirIds = []
         dirIdsSplitted = dirIdsStr.split("-")
         for dirIdStr in dirIdsSplitted:
@@ -1018,9 +1042,14 @@ def get_image_list(dirIdsStr: str):
 
         COIAS_MySQL.close_COIAS_database(connection, cursor)
 
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500)
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
     else:
         return {"result": result}
 
@@ -1030,8 +1059,10 @@ def get_image_list(dirIdsStr: str):
     summary="画像をお勧め順に自動選択し、その画像のファイル名一覧([fileNames]), 赤経deg(ra)、赤緯deg(dec)、[tract]-[patch],[patch](tractPatch)、観測日(observeDate)をプロパティに持つオブジェクトを返す",
     tags=["files"],
 )
-def get_suggested_images():
+def get_suggested_images(pj: int = -1):
     try:
+        os.chdir(pj_path(pj).as_posix())
+
         # suggest condition 1: 黄道に近い領域1と2を先にお勧めして、黄道から遠い領域3は後回し
         conditions1 = ["dec_lowest<30", "dec_lowest>30"]
         # suggest condition 2: 年が最近のものほど優先
@@ -1092,9 +1123,14 @@ def get_suggested_images():
     except FileNotFoundError as e:
         print(e)
         raise HTTPException(status_code=404)
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500)
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
     else:
         return {"result": result}
 
@@ -1106,6 +1142,8 @@ def get_suggested_images():
 )
 def put_image_list(imageNameList: list[str], pj: int = -1):
     try:
+        os.chdir(pj_path(pj).as_posix())
+
         image_list_path = pj_path(pj) / "selected_warp_files.txt"
 
         connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
@@ -1131,12 +1169,14 @@ def put_image_list(imageNameList: list[str], pj: int = -1):
         with image_list_path.open(mode="w") as f:
             f.writelines(imageFullPathList)
 
-    except FileNotFoundError as e:
-        print(e)
-        raise HTTPException(status_code=404)
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500)
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
 
 
 def split_list(list, n):
@@ -1200,6 +1240,8 @@ def errorHandling(errorNumber: int):
             errorList.update({"place": "レポートモード前処理"})
         elif numString[-2] == "8":
             errorList.update({"place": "手動測定後処理"})
+        elif numString[-2] == "9":
+            errorList.update({"place": "画像選択"})
         else:
             return errorList
 
@@ -1218,7 +1260,7 @@ def errorHandling(errorNumber: int):
         elif numString[-1] == "5":
             errorList.update(
                 {
-                    "reason": "予期せぬエラーが発生しました。数回やり直してもエラーが出る場合、開発者にlog.txtをメールで送信して下さい。Downloadsボタンからlog.txtをダウンロードできます。"
+                    "reason": "予期せぬエラーが発生しました。数回やり直してもエラーが出る場合、開発者にlog.txtをメールで送信して下さい。ログをダウンロードボタンからlog.txtをダウンロードできます。"
                 }
             )
         else:
