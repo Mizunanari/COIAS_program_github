@@ -6,7 +6,7 @@ import API.config as config
 host_ip = config.MYSQL_HOST
 host_port = config.MYSQL_PORT
 db_name = config.MYSQL_DATABASE_NAME
-username = config.MYSQL_USER
+username = config.MYSQL_USER_NAME
 password = config.MYSQL_PASSWORD
 
 DATABASE = f"mysql+pymysql://{username}:{password}@{host_ip}:{host_port}/{db_name}?charset=utf8mb4"

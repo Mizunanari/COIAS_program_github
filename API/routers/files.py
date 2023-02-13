@@ -9,6 +9,7 @@ import COIAS_MySQL
 import os
 import traceback
 import itertools
+from CRUDs import crud
 
 
 router = APIRouter(
@@ -529,35 +530,7 @@ def get_tract_list(pj: int = -1):
     try:
         os.chdir(pj_path(pj).as_posix())
 
-        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
-        cursor.execute(
-            "SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=2"
-        )
-        queryResult = cursor.fetchall()
-        COIAS_MySQL.close_COIAS_database(connection, cursor)
-
-        tmpResult = {}
-        for aQueryResult in queryResult:
-            tractId = aQueryResult["this_dir_name"]
-            if tractId in tmpResult:
-                nTotalImages = tmpResult[tractId]["n_total_images"]
-                nMeasuredImages = tmpResult[tractId]["n_measured_images"]
-            else:
-                nTotalImages = 0
-                nMeasuredImages = 0
-            nTotalImages += aQueryResult["n_total_images"]
-            nMeasuredImages += aQueryResult["n_measured_images"]
-            tmpResult[tractId] = {
-                "n_total_images": nTotalImages,
-                "n_measured_images": nMeasuredImages,
-            }
-
-        result = {}
-        for key in tmpResult.keys():
-            progress = (
-                tmpResult[key]["n_measured_images"] / tmpResult[key]["n_total_images"]
-            )
-            result[key] = {"progress": progress}
+        result = crud.get_tract()
 
     except Exception:
         log_path = pj_path(pj) / "log.txt"
