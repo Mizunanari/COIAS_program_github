@@ -3,20 +3,20 @@
 ```
 .
 ├── API
-│   ├── __init__.py      # "API"をパッケージにするファイル
-│   ├── main.py          # "main"モジュール, e.g. import API.main
-│   ├── dependencies.py  # "dependencies"モジュール, e.g. import API.dependencies
-│   ├── config.py        # "config"モジュール, e.g. import API.config
-│   ├── utils.py         # "utils"モジュール, e.g. import API.utils
-│   └── routers          # "routers" はサブパッケージ
-│   │   ├── __init__.py  # "routers" をサブパッケージにするファイル
-│   │   ├── files.py     # "files"はサブモジュール, e.g. import API.routers.files
-│   │   ├── processes.py # "processes"はサブモジュール, e.g. import API.routers.processes
-│   │   ├── tests.py     # "tests"はサブモジュール, e.g. import API.routers.tests
-│   │   └── ws.py        # "ws"はサブモジュール, e.g. import API.routers.ws
-│   └── internal         # "internal"はサブパッケージ
-│       ├── __init__.py  # makes "internal" a "Python subpackage"
-│       └── admin.py     # "admin" はサブモジュール, e.g. import API.internal.admin
+│   ├── __init__.py      # 
+│   ├── main.py          # mainの関数　e.g. import API.main
+│   ├── dependencies.py  # token処理まとめ e.g. import API.dependencies
+│   ├── config.py        # 環境変数をpythonで使用可能にする、使用の場合はここから右のようにimport e.g. import API.config
+│   ├── utils.py         # 共通して使うことのできる関数 e.g. import API.utils
+│   └── routers          # routeごとに管理
+│   │   ├── __init__.py  # 
+│   │   ├── files.py     # ファイル操作の処理 e.g. import API.routers.files
+│   │   ├── processes.py # 解析系の処理 e.g. import API.routers.processes
+│   │   ├── tests.py     # テスト用のファイル e.g. import API.routers.tests
+│   │   └── ws.py        # websocketの処理 e.g. import API.routers.ws
+│   └── internal         # front向けAPIとは別の開発者向けAPI
+│       ├── __init__.py  # 
+│       └── admin.py     # admin userのみの処理をまめたもの e.g. import API.internal.admin 
 ├── Docker
 ├── SubaruHSC
 ├── data
