@@ -125,9 +125,9 @@ async def create_upload_files(files: list[UploadFile]):
         last_project = 1
 
     # logを更新
-    log["file_list"].routerend(last_project)
-    log["create_time"].routerend(dt)
-    log["zip_upload"].routerend(False)
+    log["file_list"].append(last_project)
+    log["create_time"].append(dt)
+    log["zip_upload"].append(False)
 
     # logを書き込み
     json_str = json.dumps(log)
@@ -320,7 +320,7 @@ def run_copy(pj: int = -1):
 
     file_list = []
     for i in config.IMAGES_PATH.glob("*.png"):
-        file_list.routerend(i.name)
+        file_list.append(i.name)
     file_list.sort()
 
     return {"result": file_list}
@@ -463,7 +463,7 @@ def get_memomanual(pj: int = -1):
             + " "
             + convertFits2PngCoords([int(splitedLine[8]), int(splitedLine[9])])
         )
-        memo_manual.routerend(result)
+        memo_manual.append(result)
 
     return {"memo_manual": memo_manual}
 
