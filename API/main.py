@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import API.config as config
 from API.routers import files, processes, ws, tests
+from API.internal import admin
 
 
 COIAS_DES = 'coiasフロントアプリからアクセスされるAPIです。\
@@ -11,7 +12,7 @@ COIAS_DES = 'coiasフロントアプリからアクセスされるAPIです。\
 tags_metadata = [
     {"name": "processes", "description": "backendで実行されるコマンドAPIです。"},
     {"name": "files", "description": "backendに送信するファイルの操作APIです。"},
-    {"name": "test", "description": "テスト用のAPIです。"},
+    {"name": "tests", "description": "テスト用のAPIです。"},
 ]
 app = FastAPI(
     title="COIAS API",
@@ -20,13 +21,10 @@ app = FastAPI(
     openapi_tags=tags_metadata,
 )
 
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=config.WEB_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,6 +39,7 @@ app.include_router(files.router)
 app.include_router(processes.router)
 app.include_router(ws.router)
 app.include_router(tests.router)
+app.include_router(admin.router)
 
 
 # ディレクトリがなければつくる

@@ -15,6 +15,8 @@ def test_get_all_path():
     print(config.OPT_PATH)
     print(config.PROGRAM_PATH)
     print(config.SUBARU_PATH)
+    print(config.WEB_ORIGINS)
+    print(config.X_TOKEN_HEADER)
 
 
 def test_get_unknown_disp():

@@ -1,17 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
-from ..dependencies import get_token_header
 
 
 router = APIRouter(
     prefix="/test",
-    tags=["test"],
-    dependencies=[Depends(get_token_header)],
+    tags=["tests"],
     responses={404: {"description": "Not found"}},
 )
 
 
-@router.get("/", summary="ファイルアップロード確認用", tags=["test"])
+@router.get("/", summary="ファイルアップロード確認用", tags=["tests"])
 async def main():
     """
     [localhost](http://localhost:8000/)

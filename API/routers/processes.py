@@ -1,28 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 import os
 import subprocess
 from datetime import datetime
 import API.config as config
 from API.utils import pj_path, convertPng2FitsCoords, errorHandling, split_list
 
-from ..dependencies import get_token_header
 
 router = APIRouter(
     tags=["processes"],
-    dependencies=[Depends(get_token_header)],
     responses={404: {"description": "Not found"}},
 )
 
 
-fake_items_db = {"plumbus": {"name": "Plumbus"}, "gun": {"name": "Portal Gun"}}
-
-
-@router.get("/")
-async def read_items():
-    return fake_items_db
-
-
-@router.put("/memo_manual", summary="手動測定の出力", tags=["command"])
+@router.put("/memo_manual", summary="手動測定の出力", tags=["processes"])
 def run_memo_manual(output_list: list, pj: int = -1):
     """
     memo_manual.txtへ出力
@@ -118,7 +108,7 @@ def write_modify_list(modifiedList: list, pj: int = -1):
         f.write(text)
 
 
-@router.put("/preprocess", summary="最新のMPCデータを取得", tags=["command"], status_code=200)
+@router.put("/preprocess", summary="最新のMPCデータを取得", tags=["processes"], status_code=200)
 def run_preprocess(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
@@ -126,7 +116,7 @@ def run_preprocess(pj: int = -1):
     errorHandling(result.returncode)
 
 
-@router.put("/startsearch2R", summary="ビニング&マスク", tags=["command"], status_code=200)
+@router.put("/startsearch2R", summary="ビニング&マスク", tags=["processes"], status_code=200)
 def run_startsearch2R(binning: int = 2, pj: int = -1, sn: int = 2000):
 
     if binning != 2 and binning != 4:
@@ -142,7 +132,7 @@ def run_startsearch2R(binning: int = 2, pj: int = -1, sn: int = 2000):
 
 
 @router.put(
-    "/prempsearchC-before", summary="精密軌道取得 前処理", tags=["command"], status_code=200
+    "/prempsearchC-before", summary="精密軌道取得 前処理", tags=["processes"], status_code=200
 )
 def run_prempsearchC_before(pj: int = -1):
 
@@ -151,7 +141,7 @@ def run_prempsearchC_before(pj: int = -1):
     errorHandling(result.returncode)
 
 
-@router.put("/prempsearchC-after", summary="精密軌道取得 後処理", tags=["command"], status_code=200)
+@router.put("/prempsearchC-after", summary="精密軌道取得 後処理", tags=["processes"], status_code=200)
 def run_prempsearchC_after(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
@@ -159,7 +149,7 @@ def run_prempsearchC_after(pj: int = -1):
     errorHandling(result.returncode)
 
 
-@router.put("/astsearch_new", summary="自動検出", tags=["command"], status_code=200)
+@router.put("/astsearch_new", summary="自動検出", tags=["processes"], status_code=200)
 def run_astsearch_new(pj: int = -1, nd: int = 4, ar: int = 6):
 
     os.chdir(pj_path(pj).as_posix())
@@ -170,7 +160,7 @@ def run_astsearch_new(pj: int = -1, nd: int = 4, ar: int = 6):
 
 
 @router.put(
-    "/getMPCORB_and_mpc2edb", summary="出力ファイル整形", tags=["command"], status_code=200
+    "/getMPCORB_and_mpc2edb", summary="出力ファイル整形", tags=["processes"], status_code=200
 )
 def run_getMPCORB_and_mpc2edb(pj: int = -1):
 
@@ -179,7 +169,7 @@ def run_getMPCORB_and_mpc2edb(pj: int = -1):
     errorHandling(result.returncode)
 
 
-@router.put("/redisp", summary="再描画による確認作業", tags=["command"])
+@router.put("/redisp", summary="再描画による確認作業", tags=["processes"])
 def run_redisp(pj: int = -1):
     """
     redispが動作し、redisp.txtを配列で取得
@@ -223,7 +213,7 @@ def run_redisp(pj: int = -1):
 @router.put(
     "/AstsearchR_between_COIAS_and_ReCOIAS",
     summary="探索モード後に走り自動検出天体の番号の付け替えを行う",
-    tags=["command"],
+    tags=["processes"],
 )
 def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
@@ -244,7 +234,7 @@ def run_AstsearchR_between_COIAS_and_ReCOIAS(num: int, pj: int = -1):
 
 
 @router.put(
-    "/AstsearchR_afterReCOIAS", summary="レポートモードに入ったとき発火し、send_mpcを作成", tags=["command"]
+    "/AstsearchR_afterReCOIAS", summary="レポートモードに入ったとき発火し、send_mpcを作成", tags=["processes"]
 )
 def run_Astsearch_afterReCOIAS(pj: int = -1):
 
@@ -265,7 +255,7 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
 
 
 @router.put(
-    "/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["command"]
+    "/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["processes"]
 )
 def get_mpc(pj: int = -1):
     send_path = pj_path(pj) / "send_mpc.txt"
@@ -280,7 +270,7 @@ def get_mpc(pj: int = -1):
     return {"send_mpc": result}
 
 
-@router.put("/AstsearchR_after_manual", summary="手動測定：再描画による確認作業", tags=["command"])
+@router.put("/AstsearchR_after_manual", summary="手動測定：再描画による確認作業", tags=["processes"])
 def run_AstsearchR_after_manual(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
@@ -300,7 +290,7 @@ def run_AstsearchR_after_manual(pj: int = -1):
 
 
 @router.get(
-    "/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["command"]
+    "/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["processes"]
 )
 def get_finaldisp(pj: int = -1):
     final_disp_path = pj_path(pj) / "final_disp.txt"
@@ -319,7 +309,7 @@ def get_finaldisp(pj: int = -1):
 @router.get(
     "/predicted_disp",
     summary="直近の測定データから予測された天体の位置を記載したpredicted_disp.txtを取得する",
-    tags=["command"],
+    tags=["processes"],
 )
 def get_predicted_disp(pj: int = -1):
     predicted_disp_path = pj_path(pj) / "predicted_disp.txt"
@@ -338,7 +328,7 @@ def get_predicted_disp(pj: int = -1):
 @router.get(
     "/AstMPC_refreshed_time",
     summary="小惑星軌道データが最後にダウンロードされAstMPC.edbが更新された日時を取得する",
-    tags=["command"],
+    tags=["processes"],
 )
 def get_AstMPC_refreshed_time(pj: int = -1):
     AstMPC_path = config.COIAS_PARAM_PATH / "AstMPC.edb"
@@ -353,7 +343,7 @@ def get_AstMPC_refreshed_time(pj: int = -1):
     return {"result": result}
 
 
-@router.put("/manual_delete_list", summary="manual_delete_list.txtの出力", tags=["command"])
+@router.put("/manual_delete_list", summary="manual_delete_list.txtの出力", tags=["processes"])
 def run_manual_delete_list(output_list: list, pj: int = -1):
     """
     manual_delete_list.txtへ出力

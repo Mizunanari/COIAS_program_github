@@ -1,15 +1,14 @@
 import shutil
 import json
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, UploadFile
 from astropy.io import fits
 from API.utils import pj_path, split_list, convertFits2PngCoords
 import API.config as config
-from ..dependencies import get_token_header
 
 
 router = APIRouter(
-    dependencies=[Depends(get_token_header)],
+    tags=["files"],
     responses={404: {"description": "Not found"}},
 )
 

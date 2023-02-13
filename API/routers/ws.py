@@ -1,17 +1,15 @@
 import os
 import json
 from typing import List
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import asyncio
 import print_progress
 from API.utils import pj_path
-from ..dependencies import get_token_header
 
 
 router = APIRouter(
     prefix="/ws",
     tags=["ws"],
-    dependencies=[Depends(get_token_header)],
     responses={404: {"description": "Not found"}},
 )
 
