@@ -2,9 +2,13 @@ import shutil
 import json
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, UploadFile
-from astropy.io import fits
-from API.utils import pj_path, split_list, convertFits2PngCoords
+from API.utils import pj_path, split_list, convertFits2PngCoords, errorHandling
 import API.config as config
+import print_detailed_log
+import COIAS_MySQL
+import os
+import traceback
+import itertools
 
 
 router = APIRouter(
@@ -74,23 +78,10 @@ def get_numbered_disp(pj: int = -1):
     return {"result": result}
 
 
-@router.get("/fits_size", summary="fitsファイルのサイズを取得", tags=["files"])
-def get_FITS_SIZE(pj: int = -1):
-    fits_path = pj_path(pj) / "warp01_bin.fits"
-
-    if not fits_path.is_file():
-        raise HTTPException(status_code=404)
-
-    FITSSIZES = (
-        fits.open(fits_path)[0].header["NAXIS1"],
-        fits.open(fits_path)[0].header["NAXIS2"],
-    )
-
-    return {"result": FITSSIZES}
-
-
 @router.post("/uploadfiles", summary="fileアップロード", tags=["files"])
-async def create_upload_files(files: list[UploadFile]):
+async def create_upload_files(
+    files: list[UploadFile] = None, doUploadFiles: bool = False
+):
     """
     複数のファイルをアップロードする場合はこちらのページを使用すると良い
 
@@ -140,15 +131,16 @@ async def create_upload_files(files: list[UploadFile]):
     current_project_folder_path.mkdir()
 
     # fileを保存
-    for file in files:
-        tmp_path = current_project_folder_path / file.filename
+    if doUploadFiles:
+        for file in files:
+            tmp_path = current_project_folder_path / file.filename
 
-        try:
-            with tmp_path.open("wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
+            try:
+                with tmp_path.open("wb") as buffer:
+                    shutil.copyfileobj(file.file, buffer)
 
-        finally:
-            file.file.close()
+            finally:
+                file.file.close()
 
     # プロジェクトディレクトリの内容を取得
     files_dir = [fd.name for fd in config.FILES_PATH.iterdir() if fd.is_dir()]
@@ -158,125 +150,6 @@ async def create_upload_files(files: list[UploadFile]):
     project_files.sort()
 
     return {"tmp_files_projects": files_dir, "project_files": project_files, "log": log}
-
-
-@router.get("/project-list", summary="projectのリストを返却します", tags=["files"], status_code=200)
-def run_get_project_list():
-    # fmt:off
-    """
-    projectのリストを返却します。  
-    projectはファイルがアップロードされるたびに、作成されます。
-
-    __res__
-
-    ```
-    {
-        "tmp_files_projects": [
-            "1",
-            "2"
-        ],
-        "log": {
-            "file_list": [
-                1,
-                2
-            ],
-            "create_time": [
-                "2022-03-25 07:33:34.558611",
-                "2022-03-25 08:03:34.850662"
-            ],
-            "zip_upload": [
-                false,
-                false
-            ]
-        }
-    }
-    ```
-
-    tmp_files_projects  
-    実際にtmpフォルダーに配置されている、プロジェクトフォルダー。
-
-    log  
-    project作成時に更新される、プロジェクトの詳細情報。
-
-    """  # noqa
-    # fmt:on
-    log_path = config.FILES_PATH / "log"
-
-    # logファイルがあれば読み込み
-    if log_path.is_file():
-
-        with log_path.open(mode="r") as conf:
-            conf_json = conf.read()
-
-        if not conf_json == "":
-            log = json.loads(conf_json)
-
-    else:
-        raise HTTPException(status_code=404)
-
-    # プロジェクトディレクトリpathを作成
-    file_name = str(log["file_list"][-1])
-    current_project_folder_path = config.FILES_PATH / file_name
-
-    # プロジェクトディレクトリの内容を取得
-    files_dir = [fd.name for fd in config.FILES_PATH.iterdir() if fd.is_dir()]
-    project_files = [pf.name for pf in current_project_folder_path.iterdir()]
-
-    files_dir.sort(key=int)
-    project_files.sort()
-
-    return {"tmp_files_projects": files_dir, "log": log}
-
-
-@router.get("/project", summary="projectのフォルダ内容を返却します", tags=["files"])
-def run_get_project(pj: int = -1):
-    # fmt:off
-    """
-    projectのフォルダ内容を返却します。  
-
-    __res__
-
-    ```
-    {
-        "project_files": [
-            "1_disp-coias.png",
-            "1_disp-coias_nonmask.png",
-            "2_disp-coias.png",
-            "2_disp-coias_nonmask.png",
-                    ・
-                    ・
-                    ・
-        ]
-    }
-    ```
-
-
-    """  # noqa
-    # fmt:on
-
-    log_path = config.FILES_PATH / "log"
-
-    # logファイルがあれば読み込み
-    if log_path.is_file():
-
-        with log_path.open(mode="r") as conf:
-            conf_json = conf.read()
-
-        if not conf_json == "":
-            log = json.loads(conf_json)
-
-    else:
-        raise HTTPException(status_code=404)
-
-    # プロジェクトディレクトリを作成
-    file_name = str(log["file_list"][-1])
-    current_project_folder_path = config.FILES_PATH / file_name
-
-    # プロジェクトディレクトリの内容を取得
-    project_files = [pf.name for pf in current_project_folder_path.iterdir()]
-    project_files.sort()
-
-    return {"project_files": project_files}
 
 
 @router.delete("/deletefiles", summary="tmp_imageの中身を削除", tags=["files"], status_code=200)
@@ -330,7 +203,7 @@ def run_copy(pj: int = -1):
 def run_memo(output_list: list, pj: int = -1):
     # fmt: off
     """
-    bodyの配列からmemo.txtを出力します。
+    フロントから渡されたbodyの配列からmemo.txtを出力します。
 
     __body__
 
@@ -374,7 +247,7 @@ def run_memo(output_list: list, pj: int = -1):
 def get_memo(pj: int = -1):
     # fmt: off
     """
-    memo.txtを出力します。
+    memo.txtの内容を取得してフロントに返却します。
 
     __body__
 
@@ -414,7 +287,7 @@ def get_memo(pj: int = -1):
 def get_memomanual(pj: int = -1):
     # fmt: off
     """
-    memo_manual.txtを出力します。
+    memo_manual.txtの内容を取得してフロントに返却します。
 
     __body__
 
@@ -442,13 +315,13 @@ def get_memomanual(pj: int = -1):
         raise HTTPException(status_code=404)
 
     with memo_path.open() as f:
-        result = f.read()
+        readResult = f.read()
 
-    if result == "":
+    if readResult == "":
         raise HTTPException(status_code=404)
 
     memo_manual = []
-    for line in result.split("\n"):
+    for line in readResult.split("\n"):
         splitedLine = line.split(" ")
         result = (
             splitedLine[0]
@@ -468,6 +341,50 @@ def get_memomanual(pj: int = -1):
     return {"memo_manual": memo_manual}
 
 
+@router.put(
+    "/manual_name_modify_list",
+    summary="manual_name_modify_list.txtを書き込み",
+    tags=["files"],
+)
+def write_modify_list(modifiedList: list, pj: int = -1):
+    # fmt: off
+    """
+    textの配列を、manual_name_modify_list.txtに書き込みます。
+    """ # noqa
+    # fmt: on
+
+
+@router.put("/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["files"])
+def get_mpc(pj: int = -1):
+    send_path = pj_path(pj) / "send_mpc.txt"
+    result = ""
+
+    with send_path.open(mode="r") as f:
+        result = f.read()
+
+    if not send_path.is_file():
+        raise HTTPException(status_code=404)
+
+    return {"send_mpc": result}
+
+
+@router.get(
+    "/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["files"]
+)
+def get_finaldisp(pj: int = -1):
+    final_disp_path = pj_path(pj) / "final_disp.txt"
+
+    if not final_disp_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with final_disp_path.open() as f:
+        result = f.read()
+
+    result = split_list(result.split(), 4)
+
+    return {"result": result}
+
+
 @router.get("/final_all", summary="final_allを取得", tags=["files"])
 def get_finalall(pj: int = -1):
 
@@ -483,28 +400,6 @@ def get_finalall(pj: int = -1):
         raise HTTPException(status_code=404)
 
     return {"finalall": result}
-
-
-@router.get("/progress", summary="progress.txtに記載の進捗率などの情報を取得", tags=["files"])
-def get_progress(pj: int = -1):
-    progress_path = pj_path(pj) / "progress.txt"
-
-    try:
-        f = open(progress_path, "r")
-        line = f.readline()
-        f.close()
-
-        contents = line.split()
-        query = contents[0]
-        progress = str(int((int(contents[1]) / int(contents[2])) * 100.0)) + "%"
-
-        result = {"query": query, "progress": progress}
-    except FileNotFoundError:
-        result = {"query": "initial", "progress": "0%"}
-    except Exception:
-        result = {"query": "N/A", "progress": "N/A"}
-    finally:
-        return {"result": result}
 
 
 @router.get(
@@ -527,15 +422,52 @@ def get_time_list(pj: int = -1):
     return {"result": result}
 
 
+@router.get(
+    "/predicted_disp",
+    summary="直近の測定データから予測された天体の位置を記載したpredicted_disp.txtを取得する",
+    tags=["files"],
+)
+def get_predicted_disp(pj: int = -1):
+    predicted_disp_path = pj_path(pj) / "predicted_disp.txt"
+
+    if not predicted_disp_path.is_file():
+        raise HTTPException(status_code=404)
+
+    with predicted_disp_path.open() as f:
+        result = f.read()
+
+    result = split_list(result.split(), 5)
+
+    return {"result": result}
+
+
+@router.get(
+    "/AstMPC_refreshed_time",
+    summary="小惑星軌道データが最後にダウンロードされAstMPC.edbが更新された日時を取得する",
+    tags=["files"],
+)
+def get_AstMPC_refreshed_time(pj: int = -1):
+    AstMPC_path = config.COIAS_PARAM_PATH / "AstMPC.edb"
+
+    if not AstMPC_path.is_file():
+        result = "小惑星軌道データが存在しません.「小惑星データ更新」ボタンを押して下さい."
+    else:
+        modified_unix_time = os.path.getmtime(AstMPC_path)
+        dt = datetime.fromtimestamp(modified_unix_time)
+        result = dt.strftime("最終更新: %Y年%m月%d日%H時")
+
+    return {"result": result}
+
+
 @router.get("/manual_delete_list", summary="manual_delete_list.txtを取得", tags=["files"])
 def get_manual_delete_list(pj: int = -1):
     # fmt: off
     """
-    manual_delete_list.txtを取得します。
+    manual_delete_list.txtの内容を取得しフロントに返却します。
 
     __body__
 
-    ```JSON
+    ```
     [
         ["H000005", "0"],
         ["H000005", "3"],
@@ -558,3 +490,339 @@ def get_manual_delete_list(pj: int = -1):
     return {"result": result}
 
 
+@router.put("/manual_delete_list", summary="manual_delete_list.txtの出力", tags=["files"])
+def run_manual_delete_list(output_list: list, pj: int = -1):
+    # fmt: off
+    """
+    フロントから受け取ったbodyの配列からmanual_delete_list.txtを出力します。
+
+    __body__
+
+    ```
+    [
+        "H000005 0",
+        "H000005 3",
+        "H000012 3",
+    ]
+    ```
+    """ # noqa
+    # fmt: on
+    result = ""
+    manual_delete_path = pj_path(pj) / "manual_delete_list.txt"
+
+    with manual_delete_path.open(mode="w") as f:
+        for line in output_list:
+            f.write(line + "\n")
+
+    with manual_delete_path.open(mode="r") as f:
+        result = f.read()
+
+    return {"manual_delete_list.txt": result}
+
+
+@router.get(
+    "/tract_list",
+    summary="MySQLのCOIASデータベースに保存されている画像のtract一覧を取得する. 返り値はtractId(string)をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)をプロパティに持つ",
+    tags=["files"],
+)
+def get_tract_list(pj: int = -1):
+    try:
+        os.chdir(pj_path(pj).as_posix())
+
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        cursor.execute(
+            "SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=2"
+        )
+        queryResult = cursor.fetchall()
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        tmpResult = {}
+        for aQueryResult in queryResult:
+            tractId = aQueryResult["this_dir_name"]
+            if tractId in tmpResult:
+                nTotalImages = tmpResult[tractId]["n_total_images"]
+                nMeasuredImages = tmpResult[tractId]["n_measured_images"]
+            else:
+                nTotalImages = 0
+                nMeasuredImages = 0
+            nTotalImages += aQueryResult["n_total_images"]
+            nMeasuredImages += aQueryResult["n_measured_images"]
+            tmpResult[tractId] = {
+                "n_total_images": nTotalImages,
+                "n_measured_images": nMeasuredImages,
+            }
+
+        result = {}
+        for key in tmpResult.keys():
+            progress = (
+                tmpResult[key]["n_measured_images"] / tmpResult[key]["n_total_images"]
+            )
+            result[key] = {"progress": progress}
+
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
+    else:
+        return {"result": result}
+
+
+@router.get(
+    "/patch_list",
+    summary="int型で与えられたtractIdをクエリパラメータとして受け取り, そのtract以下に存在する全てのpatchを検索する. 返り値は'[tract]-[patch],[patch]'の文字列をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)をプロパティに持つ",
+    tags=["files"],
+)
+def get_patch_list(tractId: int, pj: int = -1):
+    try:
+        os.chdir(pj_path(pj).as_posix())
+
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        cursor.execute(
+            f"SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=3 AND parent_dir_name='{tractId}'"
+        )
+        queryResult = cursor.fetchall()
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        tmpResult = {}
+        for aQueryResult in queryResult:
+            patchId = aQueryResult["this_dir_name"]
+            if patchId in tmpResult:
+                nTotalImages = tmpResult[patchId]["n_total_images"]
+                nMeasuredImages = tmpResult[patchId]["n_measured_images"]
+            else:
+                nTotalImages = 0
+                nMeasuredImages = 0
+            nTotalImages += aQueryResult["n_total_images"]
+            nMeasuredImages += aQueryResult["n_measured_images"]
+            tmpResult[patchId] = {
+                "n_total_images": nTotalImages,
+                "n_measured_images": nMeasuredImages,
+            }
+
+        result = {}
+        for key in tmpResult.keys():
+            progress = (
+                tmpResult[key]["n_measured_images"] / tmpResult[key]["n_total_images"]
+            )
+            result[key] = {"progress": progress}
+
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
+    else:
+        return {"result": result}
+
+
+@router.get(
+    "/observe_date_list",
+    summary="'[tract]-[patch],[patch]'の文字列をクエリパラメータとして受け取り, その[tract]-[patch],[patch]以下に存在する全ての観測日を取得する. 返り値は'yyyy-mm-dd'の文字列をキーとするオブジェクトで, 各キーの値であるオブジェクトは解析進捗率progress(float)とそのディレクトリid dir_id(int)をプロパティに持つ",
+    tags=["files"],
+)
+def get_observe_date_list(patchId: str, pj: int = -1):
+    try:
+        os.chdir(pj_path(pj).as_posix())
+
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        cursor.execute(
+            f"SELECT this_dir_id,this_dir_name,n_total_images,n_measured_images FROM dir_structure WHERE level=4 AND parent_dir_name='{patchId}'"
+        )
+        queryResult = cursor.fetchall()
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        result = {}
+        for aQueryResult in queryResult:
+            progress = (
+                aQueryResult["n_measured_images"] / aQueryResult["n_total_images"]
+            )
+            result[aQueryResult["this_dir_name"]] = {
+                "progress": progress,
+                "dir_id": aQueryResult["this_dir_id"],
+            }
+
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
+    else:
+        return {"result": result}
+
+
+@router.get(
+    "/image_list",
+    summary="選択した画像を格納しているディレクトリ構造の末端のディレクトリid (str, 複数可能・複数の時は-で区切られる)をクエリパラメータとして受け取り, そのディレクトリ以下に存在する画像の一覧を取得する. 返り値は画像ファイル名をキーとするオブジェクトで, 各キーの値であるオブジェクトは自動測定済みであるか否かを示すisAutoMeasured(bool)と手動測定済みであるか否かを示すisManualMeasured(bool)をプロパティに持つ",
+    tags=["files"],
+)
+def get_image_list(dirIdsStr: str, pj: int = -1):
+    try:
+        os.chdir(pj_path(pj).as_posix())
+
+        dirIds = []
+        dirIdsSplitted = dirIdsStr.split("-")
+        for dirIdStr in dirIdsSplitted:
+            dirIds.routerend(int(dirIdStr))
+
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        result = {}
+
+        for dirId in dirIds:
+            cursor.execute(
+                f"SELECT image_id,image_name,is_auto_measured,is_manual_measured FROM image_info WHERE direct_parent_dir_id={dirId}"
+            )
+            queryResult = cursor.fetchall()
+
+            for aQueryResult in queryResult:
+                result[aQueryResult["image_name"]] = {
+                    "isAutoMeasured": (aQueryResult["is_auto_measured"] == 1),
+                    "isManualMeasured": (aQueryResult["is_manual_measured"] == 1),
+                }
+
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
+    else:
+        return {"result": result}
+
+
+@router.get(
+    "/suggested_images",
+    summary="画像をお勧め順に自動選択し、その画像のファイル名一覧([fileNames]), 赤経deg(ra)、赤緯deg(dec)、[tract]-[patch],[patch](tractPatch)、観測日(observeDate)をプロパティに持つオブジェクトを返す",
+    tags=["files"],
+)
+def get_suggested_images(pj: int = -1):
+    try:
+        os.chdir(pj_path(pj).as_posix())
+
+        # suggest condition 1: 黄道に近い領域1と2を先にお勧めして、黄道から遠い領域3は後回し
+        conditions1 = ["dec_lowest<30", "dec_lowest>30"]
+        # suggest condition 2: 年が最近のものほど優先
+        conditions2 = []
+        for year in range(2020, 2013, -1):
+            conditions2.append(f"this_dir_name LIKE '{year}-%'")
+        # suggest condition 3: 画像枚数が5枚のものを優先、次に4枚、その次にそれ以外
+        conditions3 = ["n_total_images=5", "n_total_images=4", "n_total_images>5"]
+
+        # ---get a directory for suggestion-----------------------------------
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        dirNotFound = True
+        for condition1, condition2, condition3 in itertools.product(
+            conditions1, conditions2, conditions3
+        ):
+            cursor.execute(
+                f"SELECT IF (ra_lowest<45, ra_lowest, ra_lowest-360) AS ra_reduced, ra_lowest, dec_lowest, this_dir_id, parent_dir_name, this_dir_name FROM dir_structure WHERE level=4 AND n_measured_images=0 AND {condition1} AND {condition2} AND {condition3} ORDER BY this_dir_name DESC, ra_reduced DESC LIMIT 1;"
+            )
+            dirStructureQueryResults = cursor.fetchall()
+            if len(dirStructureQueryResults) == 1:
+                dirNotFound = False
+                break
+
+        if dirNotFound:
+            raise FileNotFoundError("We cannot find any directory for suggestion")
+
+        queryResult = dirStructureQueryResults[0]
+        dirId = queryResult["this_dir_id"]
+        ra = queryResult["ra_lowest"]
+        dec = queryResult["dec_lowest"]
+        observeDate = queryResult["this_dir_name"]
+        tractPatch = queryResult["parent_dir_name"]
+        # ---------------------------------------------------------------------
+
+        # ---get image names in the suggested directory------------------------
+        cursor.execute(
+            f"SELECT image_name FROM image_info WHERE direct_parent_dir_id={dirId};"
+        )
+        imageInfoQueryResults = cursor.fetchall()
+        if len(imageInfoQueryResults) < 4:
+            raise Exception(
+                f"Something wrong. Image number in the selected directory is smaller than 4: NImages={len(imageInfoQueryResults)}"
+            )
+        fileNames = []
+        for aQueryResult in imageInfoQueryResults:
+            fileNames.append(aQueryResult["image_name"])
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+        # ----------------------------------------------------------------------
+
+        result = {
+            "fileNames": fileNames,
+            "ra": ra,
+            "dec": dec,
+            "tractPatch": tractPatch,
+            "observeDate": observeDate,
+        }
+
+    except FileNotFoundError as e:
+        print(e)
+        raise HTTPException(status_code=404)
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)
+    else:
+        return {"result": result}
+
+
+@router.put(
+    "/put_image_list",
+    summary="解析したい画像ファイル名のリストをリクエストボディで受け取り, それら画像へのfull pathを作業ディレクトリのselected_warp_files.txtに書き出す",
+    tags=["files"],
+)
+def put_image_list(imageNameList: list[str], pj: int = -1):
+    try:
+        os.chdir(pj_path(pj).as_posix())
+
+        image_list_path = pj_path(pj) / "selected_warp_files.txt"
+
+        connection, cursor = COIAS_MySQL.connect_to_COIAS_database()
+        imageFullPathList = []
+        for imageName in imageNameList:
+            cursor.execute(
+                f"SELECT full_dir FROM image_info WHERE image_name='{imageName}'"
+            )
+            queryResult = cursor.fetchall()
+            if len(queryResult) == 0:
+                print(f"record for the file {imageName} is not found!")
+                raise FileNotFoundError
+            elif len(queryResult) >= 2:
+                print(
+                    f"something wrong! There are multiple records for the image {imageName}: N records = {len(queryResult)}"
+                )
+                raise Exception
+            else:
+                imageFullPath = queryResult[0]["full_dir"] + "/" + imageName + "\n"
+                imageFullPathList.append(imageFullPath)
+        COIAS_MySQL.close_COIAS_database(connection, cursor)
+
+        with image_list_path.open(mode="w") as f:
+            f.writelines(imageFullPathList)
+
+    except Exception:
+        log_path = pj_path(pj) / "log.txt"
+        with log_path.open("w") as f:
+            f.write("Some errors occur in select image mode!")
+            f.write(traceback.format_exc())
+            f.flush()
+        print_detailed_log.print_detailed_log(dict(globals()))
+        errorHandling(95)

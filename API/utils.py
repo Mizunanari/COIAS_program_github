@@ -67,6 +67,8 @@ def errorHandling(errorNumber: int):
             errorList.update({"place": "レポートモード前処理"})
         elif numString[-2] == "8":
             errorList.update({"place": "手動測定後処理"})
+        elif numString[-2] == "9":
+            errorList.update({"place": "画像選択"})
         else:
             return errorList
 
@@ -85,7 +87,7 @@ def errorHandling(errorNumber: int):
         elif numString[-1] == "5":
             errorList.update(
                 {
-                    "reason": "予期せぬエラーが発生しました。数回やり直してもエラーが出る場合、開発者にlog.txtをメールで送信して下さい。Downloadsボタンからlog.txtをダウンロードできます。"
+                    "reason": "予期せぬエラーが発生しました。数回やり直してもエラーが出る場合、開発者にlog.txtをメールで送信して下さい。「ログをダウンロード」ボタンからlog.txtをダウンロードできます。"
                 }
             )
         else:

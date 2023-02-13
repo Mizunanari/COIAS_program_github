@@ -1,8 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import os
 import subprocess
-from datetime import datetime
-import API.config as config
 from API.utils import pj_path, convertPng2FitsCoords, errorHandling, split_list
 
 
@@ -14,13 +12,9 @@ router = APIRouter(
 
 @router.put("/memo_manual", summary="手動測定の出力", tags=["processes"])
 def run_memo_manual(output_list: list, pj: int = -1):
-    """
-    memo_manual.txtへ出力
-    """
-
     # fmt: off
     """
-    bodyの配列からmemo_manual.txtを出力します。
+    フロントから受け取ったbodyの配列からmemo_manual.txtを出力します。
 
     __body__
 
@@ -85,29 +79,6 @@ def run_memo_manual(output_list: list, pj: int = -1):
     return {"memo_manual.txt": result}
 
 
-@router.put(
-    "/manual_name_modify_list",
-    summary="manual_name_modify_list.txtを書き込み",
-    tags=["files"],
-)
-def write_modify_list(modifiedList: list, pj: int = -1):
-    # fmt: off
-    """
-    textの配列を、manual_name_modify_list.txtに書き込みます。
-    """ # noqa
-    # fmt: on
-
-    text = ""
-    for (i, oldNewPair) in enumerate(modifiedList):
-        text = text + "{} {}".format(oldNewPair[0], oldNewPair[1])
-        if not i == len(modifiedList) - 1:
-            text = text + "\n"
-    text_path = pj_path(pj) / "manual_name_modify_list.txt"
-
-    with text_path.open(mode="w") as f:
-        f.write(text)
-
-
 @router.put("/preprocess", summary="最新のMPCデータを取得", tags=["processes"], status_code=200)
 def run_preprocess(pj: int = -1):
 
@@ -132,7 +103,10 @@ def run_startsearch2R(binning: int = 2, pj: int = -1, sn: int = 2000):
 
 
 @router.put(
-    "/prempsearchC-before", summary="精密軌道取得 前処理", tags=["processes"], status_code=200
+    "/prempsearchC-before",
+    summary="精密軌道取得(確定番号付き天体)",
+    tags=["processes"],
+    status_code=200,
 )
 def run_prempsearchC_before(pj: int = -1):
 
@@ -141,7 +115,9 @@ def run_prempsearchC_before(pj: int = -1):
     errorHandling(result.returncode)
 
 
-@router.put("/prempsearchC-after", summary="精密軌道取得 後処理", tags=["processes"], status_code=200)
+@router.put(
+    "/prempsearchC-after", summary="精密軌道取得(仮符号天体)", tags=["processes"], status_code=200
+)
 def run_prempsearchC_after(pj: int = -1):
 
     os.chdir(pj_path(pj).as_posix())
@@ -160,7 +136,10 @@ def run_astsearch_new(pj: int = -1, nd: int = 4, ar: int = 6):
 
 
 @router.put(
-    "/getMPCORB_and_mpc2edb", summary="出力ファイル整形", tags=["processes"], status_code=200
+    "/getMPCORB_and_mpc2edb",
+    summary="小惑星の軌道情報をMPCから取得",
+    tags=["processes"],
+    status_code=200,
 )
 def run_getMPCORB_and_mpc2edb(pj: int = -1):
 
@@ -169,10 +148,10 @@ def run_getMPCORB_and_mpc2edb(pj: int = -1):
     errorHandling(result.returncode)
 
 
-@router.put("/redisp", summary="再描画による確認作業", tags=["processes"])
+@router.put("/redisp", summary="再描画による確認作業", tags=["files"])
 def run_redisp(pj: int = -1):
     """
-    redispが動作し、redisp.txtを配列で取得
+    redisp.txtの内容をを配列で取得しフロントに返却
 
     __res__
 
@@ -254,22 +233,6 @@ def run_Astsearch_afterReCOIAS(pj: int = -1):
     return {"send_mpc": result}
 
 
-@router.put(
-    "/get_mpc", summary="2回目以降にレポートモードに入ったときにsend_mpcを取得するだけのAPI", tags=["processes"]
-)
-def get_mpc(pj: int = -1):
-    send_path = pj_path(pj) / "send_mpc.txt"
-    result = ""
-
-    with send_path.open(mode="r") as f:
-        result = f.read()
-
-    if not send_path.is_file():
-        raise HTTPException(status_code=404)
-
-    return {"send_mpc": result}
-
-
 @router.put("/AstsearchR_after_manual", summary="手動測定：再描画による確認作業", tags=["processes"])
 def run_AstsearchR_after_manual(pj: int = -1):
 
@@ -287,91 +250,3 @@ def run_AstsearchR_after_manual(pj: int = -1):
         raise HTTPException(status_code=404)
 
     return {"reredisp": result}
-
-
-@router.get(
-    "/final_disp", summary="最終確認モードで表示させる天体一覧を記したfinal_disp.txtを取得する", tags=["processes"]
-)
-def get_finaldisp(pj: int = -1):
-    final_disp_path = pj_path(pj) / "final_disp.txt"
-
-    if not final_disp_path.is_file():
-        raise HTTPException(status_code=404)
-
-    with final_disp_path.open() as f:
-        result = f.read()
-
-    result = split_list(result.split(), 4)
-
-    return {"result": result}
-
-
-@router.get(
-    "/predicted_disp",
-    summary="直近の測定データから予測された天体の位置を記載したpredicted_disp.txtを取得する",
-    tags=["processes"],
-)
-def get_predicted_disp(pj: int = -1):
-    predicted_disp_path = pj_path(pj) / "predicted_disp.txt"
-
-    if not predicted_disp_path.is_file():
-        raise HTTPException(status_code=404)
-
-    with predicted_disp_path.open() as f:
-        result = f.read()
-
-    result = split_list(result.split(), 5)
-
-    return {"result": result}
-
-
-@router.get(
-    "/AstMPC_refreshed_time",
-    summary="小惑星軌道データが最後にダウンロードされAstMPC.edbが更新された日時を取得する",
-    tags=["processes"],
-)
-def get_AstMPC_refreshed_time(pj: int = -1):
-    AstMPC_path = config.COIAS_PARAM_PATH / "AstMPC.edb"
-
-    if not AstMPC_path.is_file():
-        result = "小惑星軌道データが存在しません.「小惑星データ更新」ボタンを押して下さい."
-    else:
-        modified_unix_time = os.path.getmtime(AstMPC_path)
-        dt = datetime.fromtimestamp(modified_unix_time)
-        result = dt.strftime("最終更新: %Y年%m月%d日%H時")
-
-    return {"result": result}
-
-
-@router.put("/manual_delete_list", summary="manual_delete_list.txtの出力", tags=["processes"])
-def run_manual_delete_list(output_list: list, pj: int = -1):
-    """
-    manual_delete_list.txtへ出力
-    """
-
-    # fmt: off
-    """
-    bodyの配列からmanual_delete_list.txtを出力します。
-
-    __body__
-
-    ```JSON
-    [
-        "H000005 0",
-        "H000005 3",
-        "H000012 3",
-    ]
-    ```
-    """ # noqa
-    # fmt: on
-    result = ""
-    manual_delete_path = pj_path(pj) / "manual_delete_list.txt"
-
-    with manual_delete_path.open(mode="w") as f:
-        for line in output_list:
-            f.write(line + "\n")
-
-    with manual_delete_path.open(mode="r") as f:
-        result = f.read()
-
-    return {"manual_delete_list.txt": result}
