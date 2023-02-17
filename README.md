@@ -8,15 +8,20 @@
 │   ├── dependencies.py  # token処理まとめ e.g. import API.dependencies
 │   ├── config.py        # 環境変数をpythonで使用可能にする、使用の場合はここから右のようにimport e.g. import API.config
 │   ├── utils.py         # 共通して使うことのできる関数 e.g. import API.utils
-│   └── routers          # routeごとに管理
+│   └── CRUDs            # DB処理をまとめたもの
 │   │   ├── __init__.py  # 
-│   │   ├── files.py     # ファイル操作の処理 e.g. import API.routers.files
-│   │   ├── processes.py # 解析系の処理 e.g. import API.routers.processes
-│   │   ├── tests.py     # テスト用のファイル e.g. import API.routers.tests
-│   │   └── ws.py        # websocketの処理 e.g. import API.routers.ws
+│   │   └── crud.py      # db操作系の処理をまとめたファイル
 │   └── internal         # front向けAPIとは別の開発者向けAPI
+│   │   ├── __init__.py  # 
+│   │   └── admin.py     # admin userのみの処理をまめたもの e.g. import API.internal.admin 
+│   └── models　　　　　　 # DB上のテーブルに合わせたモデル
+│   └── routers          # routeごとに管理
 │       ├── __init__.py  # 
-│       └── admin.py     # admin userのみの処理をまめたもの e.g. import API.internal.admin 
+│       ├── files.py     # ファイル操作の処理 e.g. import API.routers.files
+│       ├── processes.py # 解析系の処理 e.g. import API.routers.processes
+│       ├── tests.py     # テスト用のファイル e.g. import API.routers.tests
+│       └── ws.py        # websocketの処理 e.g. import API.routers.ws
+│
 ├── Docker
 ├── SubaruHSC
 ├── data
