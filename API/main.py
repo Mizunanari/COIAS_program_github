@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import API.config as config
-from API.routers import files, processes, ws, tests
+from API.routers import files, processes, ws, tests, db
 from API.internal import admin
 
 
@@ -37,6 +37,7 @@ app.mount("/static", StaticFiles(directory=config.DOC_IMAGE_PATH), name="icon")
 
 app.include_router(files.router)
 app.include_router(processes.router)
+app.include_router(db.router)
 app.include_router(ws.router)
 app.include_router(tests.router)
 app.include_router(admin.router)

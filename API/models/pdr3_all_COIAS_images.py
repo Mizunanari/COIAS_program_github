@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, Text, Float
-from database import Base
+from API.database import Base
 
 
 class Pdr3AllCOIASImages(Base):
