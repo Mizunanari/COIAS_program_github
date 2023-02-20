@@ -21,11 +21,12 @@ router = APIRouter(
 )
 def get_tract_list(pj: int = -1):
     try:
-        os.chdir(pj_path(pj).as_posix())
+        # os.chdir(pj_path(pj).as_posix())
 
         result = crud.get_tract()
 
     except Exception:
+        print(traceback.format_exc())
         log_path = pj_path(pj) / "log.txt"
         with log_path.open("w") as f:
             f.write("Some errors occur in select image mode!")

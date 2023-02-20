@@ -16,8 +16,8 @@ COIAS_PARAM_PATH = pathlib.Path(PARAM.COIAS_DATA_PATH + os.getenv("COIAS_PARAM_P
 WEB_ORIGINS = os.getenv("WEB_ORIGINS").split(",")
 X_TOKEN_HEADER = os.getenv("X_TOKEN_HEADER")
 
-MYSQL_HOST = os.getenv("MYSQL_HOST")
-MYSQL_PORT = os.getenv("MYSQL_PORT")
-MYSQL_DATABASE_NAME = os.getenv("MYSQL_DATABASE_NAME")
-MYSQL_USER_NAME = os.getenv("MYSQL_USER_NAME")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_DATABASE_NAME = os.getenv("DB_DATABASE_NAME")
+DB_USER_NAME = os.getenv("DB_USER_NAME")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
